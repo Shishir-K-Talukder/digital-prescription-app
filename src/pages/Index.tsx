@@ -1,16 +1,123 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Printer, Settings, FileText } from "lucide-react";
+import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
+import PatientInfo, { PatientData } from "@/components/PatientInfo";
+import ClinicalSection, { ClinicalData } from "@/components/ClinicalSection";
+import MedicineSection, { Medicine } from "@/components/MedicineSection";
+import AdviceSection, { AdviceData } from "@/components/AdviceSection";
+import PrintPreview from "@/components/PrintPreview";
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const today = new Date().toISOString().split("T")[0];
+
+const Index = () => {
+  const [activeTab, setActiveTab] = useState("write");
+  const [editDoctor, setEditDoctor] = useState(false);
+
+  const [doctor, setDoctor] = useState<DoctorInfo>({
+    name: "",
+    degrees: "",
+    specialization: "",
+    bmdcNo: "",
+    chamberAddress: "",
+    phone: "",
+  });
+
+  const [patient, setPatient] = useState<PatientData>({
+    name: "",
+    age: "",
+    sex: "",
+    mobile: "",
+    address: "",
+    date: today,
+  });
+
+  const [clinical, setClinical] = useState<ClinicalData>({
+    chiefComplaint: "",
+    onExamination: "",
+    diagnosis: "",
+    investigation: "",
+  });
+
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+
+  const [advice, setAdvice] = useState<AdviceData>({
+    advice: "",
+    followUpDate: "",
+  });
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleNewPrescription = () => {
+    setPatient({ name: "", age: "", sex: "", mobile: "", address: "", date: today });
+    setClinical({ chiefComplaint: "", onExamination: "", diagnosis: "", investigation: "" });
+    setMedicines([]);
+    setAdvice({ advice: "", followUpDate: "" });
+    setActiveTab("write");
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="min-h-screen bg-background">
+      {/* Top bar */}
+      <header className="bg-card border-b border-border sticky top-0 z-10">
+        <div className="container max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-serif italic text-primary">℞</span>
+            <h1 className="text-lg font-bold text-foreground">Digital Prescription</h1>
+            <span className="text-xs text-muted-foreground hidden sm:inline">— Bangladesh PRD System</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => setEditDoctor(!editDoctor)}>
+              <Settings className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Doctor Info</span>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={handleNewPrescription}>
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">New Rx</span>
+            </Button>
+            <Button size="sm" className="gap-1 text-xs" onClick={handlePrint}>
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Print</span>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container max-w-5xl mx-auto px-4 py-6">
+        <DoctorHeader doctor={doctor} onChange={setDoctor} editMode={editDoctor} />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="write">Write Prescription</TabsTrigger>
+            <TabsTrigger value="preview">Print Preview</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="write" className="space-y-0">
+            <PatientInfo patient={patient} onChange={setPatient} />
+            <ClinicalSection data={clinical} onChange={setClinical} />
+            <MedicineSection medicines={medicines} onChange={setMedicines} />
+            <AdviceSection data={advice} onChange={setAdvice} />
+          </TabsContent>
+
+          <TabsContent value="preview">
+            <PrintPreview doctor={doctor} patient={patient} clinical={clinical} medicines={medicines} advice={advice} />
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Print styles */}
+      <style>{`
+        @media print {
+          header, .tabs-list, [role="tablist"] { display: none !important; }
+          main { padding: 0 !important; }
+          .print-preview { border: none !important; box-shadow: none !important; max-width: 100% !important; }
+        }
+      `}</style>
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
