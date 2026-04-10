@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, Settings, FileText } from "lucide-react";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
-import ClinicalSection, { ClinicalData } from "@/components/ClinicalSection";
+import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview from "@/components/PrintPreview";
@@ -35,7 +35,7 @@ const Index = () => {
 
   const [clinical, setClinical] = useState<ClinicalData>({
     chiefComplaint: "",
-    onExamination: "",
+    onExamination: { ...defaultOnExamination },
     diagnosis: "",
     investigation: "",
   });
@@ -53,7 +53,7 @@ const Index = () => {
 
   const handleNewPrescription = () => {
     setPatient({ name: "", age: "", sex: "", mobile: "", address: "", date: today });
-    setClinical({ chiefComplaint: "", onExamination: "", diagnosis: "", investigation: "" });
+    setClinical({ chiefComplaint: "", onExamination: { ...defaultOnExamination }, diagnosis: "", investigation: "" });
     setMedicines([]);
     setAdvice({ advice: "", followUpDate: "" });
     setActiveTab("write");

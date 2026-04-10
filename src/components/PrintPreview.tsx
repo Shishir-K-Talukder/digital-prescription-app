@@ -42,7 +42,16 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice }: Props) =
             <div><p className="font-bold text-accent-foreground">C/C:</p><p className="whitespace-pre-wrap">{clinical.chiefComplaint}</p></div>
           )}
           {clinical.onExamination && (
-            <div><p className="font-bold text-accent-foreground">O/E:</p><p className="whitespace-pre-wrap">{clinical.onExamination}</p></div>
+            <div>
+              <p className="font-bold text-accent-foreground">O/E:</p>
+              <div className="space-y-0.5">
+                {Object.entries(clinical.onExamination)
+                  .filter(([_, v]) => v && v !== "Absent")
+                  .map(([k, v]) => (
+                    <p key={k}><span className="font-medium capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}:</span> {v}</p>
+                  ))}
+              </div>
+            </div>
           )}
           {clinical.diagnosis && (
             <div><p className="font-bold text-accent-foreground">D/X:</p><p className="whitespace-pre-wrap">{clinical.diagnosis}</p></div>
