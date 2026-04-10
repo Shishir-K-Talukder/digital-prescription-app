@@ -5,10 +5,28 @@ import { Medicine } from "./MedicineSection";
 import { AdviceData } from "./AdviceSection";
 
 export interface PrintSettings {
-  pageSize: "A4" | "A5" | "Letter";
+  pageSize: "A4" | "A5" | "Letter" | "Custom";
+  customWidth: string;
+  customHeight: string;
   headerSize: "small" | "medium" | "large";
   showDoctorInfo: boolean;
+  showCC: boolean;
+  showOE: boolean;
+  showDiagnosis: boolean;
+  showInvestigation: boolean;
 }
+
+export const defaultPrintSettings: PrintSettings = {
+  pageSize: "A4",
+  customWidth: "210",
+  customHeight: "297",
+  headerSize: "medium",
+  showDoctorInfo: true,
+  showCC: true,
+  showOE: true,
+  showDiagnosis: true,
+  showInvestigation: true,
+};
 
 interface Props {
   doctor: DoctorInfo;
@@ -33,21 +51,34 @@ const headerSizeClass = {
   large: "text-2xl",
 };
 
+const isDoctorFilled = (doctor: DoctorInfo) =>
+  !!(doctor.name || doctor.degrees || doctor.specialization || doctor.bmdcNo);
+
 const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSettings }: Props) => {
+  const settings = { ...defaultPrintSettings, ...printSettings };
+
   const filledOE = Object.entries(clinical.onExamination)
     .filter(([_, v]) => v && v !== "Absent" && v.trim() !== "")
     .map(([k, v]) => ({ label: OE_LABELS[k as keyof OnExaminationData], value: v }));
 
+  const doctorHasInfo = isDoctorFilled(doctor);
+
   return (
     <div className="print-preview bg-white text-black p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
-      {/* Doctor Header */}
-      {printSettings.showDoctorInfo && (
-        <div className="text-center border-b-2 border-black pb-3 mb-4">
-          <h1 className={`font-bold ${headerSizeClass[printSettings.headerSize]}`}>{doctor.name || "Doctor Name"}</h1>
-          <p className="text-xs text-gray-600">{doctor.degrees}</p>
-          <p className="text-xs font-medium">{doctor.specialization}</p>
-          <p className="text-[10px] text-gray-500">BMDC Reg. No: {doctor.bmdcNo}</p>
-          <p className="text-[10px] text-gray-500">{doctor.chamberAddress} {doctor.phone && `| ☎ ${doctor.phone}`}</p>
+      {/* Doctor Header - always show area, but only fill if doctor has info */}
+      {settings.showDoctorInfo && (
+        <div className="text-center border-b-2 border-black pb-3 mb-4" style={{ minHeight: settings.headerSize === "large" ? 100 : settings.headerSize === "medium" ? 70 : 50 }}>
+          {doctorHasInfo ? (
+            <>
+              <h1 className={`font-bold ${headerSizeClass[settings.headerSize]}`}>{doctor.name}</h1>
+              {doctor.degrees && <p className="text-xs text-gray-600">{doctor.degrees}</p>}
+              {doctor.specialization && <p className="text-xs font-medium">{doctor.specialization}</p>}
+              {doctor.bmdcNo && <p className="text-[10px] text-gray-500">BMDC Reg. No: {doctor.bmdcNo}</p>}
+              {(doctor.chamberAddress || doctor.phone) && (
+                <p className="text-[10px] text-gray-500">{doctor.chamberAddress} {doctor.phone && `| ☎ ${doctor.phone}`}</p>
+              )}
+            </>
+          ) : null}
         </div>
       )}
 
@@ -63,14 +94,14 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
       <div className="flex min-h-[400px]">
         {/* Left: Clinical */}
         <div className="w-[35%] border-r border-gray-300 pr-4 space-y-4 text-xs">
-          {clinical.chiefComplaint && (
+          {settings.showCC && clinical.chiefComplaint && (
             <div>
               <p className="font-bold underline">C/C</p>
               <p className="whitespace-pre-wrap mt-1">{clinical.chiefComplaint}</p>
             </div>
           )}
 
-          {filledOE.length > 0 && (
+          {settings.showOE && filledOE.length > 0 && (
             <div>
               <p className="font-bold underline">O/E</p>
               <div className="mt-1 space-y-0.5">
@@ -84,14 +115,14 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
             </div>
           )}
 
-          {clinical.diagnosis && (
+          {settings.showDiagnosis && clinical.diagnosis && (
             <div>
-              <p className="font-bold underline">D/H</p>
+              <p className="font-bold underline">D/X</p>
               <p className="whitespace-pre-wrap mt-1">{clinical.diagnosis}</p>
             </div>
           )}
 
-          {clinical.investigation && (
+          {settings.showInvestigation && clinical.investigation && (
             <div>
               <p className="font-bold underline">Investigation</p>
               <p className="whitespace-pre-wrap mt-1">{clinical.investigation}</p>
@@ -103,7 +134,7 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
         <div className="flex-1 pl-6">
           <p className="text-3xl font-serif italic mb-4">℞</p>
           <div className="space-y-4">
-            {medicines.map((med, idx) => (
+            {medicines.map((med) => (
               <div key={med.id} className="text-xs">
                 <p className="font-bold uppercase">
                   {med.type}. {med.name}
@@ -115,7 +146,6 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
             ))}
           </div>
 
-          {/* Duration on right side */}
           {medicines.length > 0 && (
             <div className="mt-4">
               {medicines.map((med) => (
@@ -126,7 +156,6 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
             </div>
           )}
 
-          {/* Advice */}
           {(advice.advice || advice.followUpDate) && (
             <div className="mt-8 pt-3 border-t border-gray-300 text-xs">
               {advice.advice && (
@@ -141,13 +170,13 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
       </div>
 
       {/* Signature */}
-      {printSettings.showDoctorInfo && (
+      {settings.showDoctorInfo && doctorHasInfo && (
         <div className="mt-12 pt-4 border-t border-gray-300 flex justify-end">
           <div className="text-center text-xs">
             <div className="w-40 border-b border-black mb-1" />
             <p className="font-bold">{doctor.name}</p>
-            <p className="text-gray-500">{doctor.degrees}</p>
-            <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>
+            {doctor.degrees && <p className="text-gray-500">{doctor.degrees}</p>}
+            {doctor.bmdcNo && <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>}
           </div>
         </div>
       )}
