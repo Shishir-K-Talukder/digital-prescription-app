@@ -7,7 +7,8 @@ import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
-import PrintPreview from "@/components/PrintPreview";
+import PrintPreview, { PrintSettings } from "@/components/PrintPreview";
+import PrintSetup from "@/components/PrintSetup";
 
 const today = new Date().toISOString().split("T")[0];
 
@@ -47,6 +48,12 @@ const Index = () => {
     followUpDate: "",
   });
 
+  const [printSettings, setPrintSettings] = useState<PrintSettings>({
+    pageSize: "A4",
+    headerSize: "medium",
+    showDoctorInfo: true,
+  });
+
   const handlePrint = () => {
     window.print();
   };
@@ -57,6 +64,12 @@ const Index = () => {
     setMedicines([]);
     setAdvice({ advice: "", followUpDate: "" });
     setActiveTab("write");
+  };
+
+  const pageSizeStyles: Record<string, string> = {
+    A4: "max-w-[800px]",
+    A5: "max-w-[560px]",
+    Letter: "max-w-[816px]",
   };
 
   return (
@@ -93,6 +106,7 @@ const Index = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="write">Write Prescription</TabsTrigger>
             <TabsTrigger value="preview">Print Preview</TabsTrigger>
+            <TabsTrigger value="setup">Print Setup</TabsTrigger>
           </TabsList>
 
           <TabsContent value="write" className="space-y-0">
@@ -103,7 +117,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="preview">
-            <PrintPreview doctor={doctor} patient={patient} clinical={clinical} medicines={medicines} advice={advice} />
+            <PrintPreview doctor={doctor} patient={patient} clinical={clinical} medicines={medicines} advice={advice} printSettings={printSettings} />
+          </TabsContent>
+
+          <TabsContent value="setup">
+            <PrintSetup settings={printSettings} onChange={setPrintSettings} />
           </TabsContent>
         </Tabs>
       </main>
@@ -114,6 +132,7 @@ const Index = () => {
           header, .tabs-list, [role="tablist"] { display: none !important; }
           main { padding: 0 !important; }
           .print-preview { border: none !important; box-shadow: none !important; max-width: 100% !important; }
+          @page { size: ${printSettings.pageSize}; margin: 10mm; }
         }
       `}</style>
     </div>

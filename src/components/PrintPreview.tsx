@@ -1,8 +1,14 @@
 import { DoctorInfo } from "./DoctorHeader";
 import { PatientData } from "./PatientInfo";
-import { ClinicalData } from "./ClinicalSection";
+import { ClinicalData, OnExaminationData } from "./ClinicalSection";
 import { Medicine } from "./MedicineSection";
 import { AdviceData } from "./AdviceSection";
+
+export interface PrintSettings {
+  pageSize: "A4" | "A5" | "Letter";
+  headerSize: "small" | "medium" | "large";
+  showDoctorInfo: boolean;
+}
 
 interface Props {
   doctor: DoctorInfo;
@@ -10,79 +16,121 @@ interface Props {
   clinical: ClinicalData;
   medicines: Medicine[];
   advice: AdviceData;
+  printSettings: PrintSettings;
 }
 
-const PrintPreview = ({ doctor, patient, clinical, medicines, advice }: Props) => {
-  return (
-    <div className="print-preview bg-card p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
-      {/* Doctor Header */}
-      <div className="text-center border-b-2 border-primary pb-3 mb-4">
-        <h1 className="text-xl font-bold text-primary">{doctor.name || "Doctor Name"}</h1>
-        <p className="text-xs text-muted-foreground">{doctor.degrees}</p>
-        <p className="text-xs font-medium">{doctor.specialization}</p>
-        <p className="text-[10px] text-muted-foreground">BMDC Reg. No: {doctor.bmdcNo}</p>
-        <p className="text-[10px] text-muted-foreground">{doctor.chamberAddress} {doctor.phone && `| 📞 ${doctor.phone}`}</p>
-      </div>
+const OE_LABELS: Record<keyof OnExaminationData, string> = {
+  bp: "BP", weight: "Weight", temp: "Temp", pulse: "Pulse",
+  heart: "Heart", lungs: "Lungs", abd: "Abd", anaemia: "Anaemia",
+  jaundice: "Jaundice", cyanosis: "Cyanosis", oedema: "Oedema",
+  rr: "RR", spo2: "SPO2", lmp: "LMP", edd: "EDD",
+  fm: "FM", fhr: "FHR", gravida: "GRAVIDA",
+};
 
-      {/* Patient Info */}
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs mb-4 pb-2 border-b border-border">
-        <span><strong>Patient:</strong> {patient.name}</span>
-        <span><strong>Age:</strong> {patient.age}</span>
-        <span><strong>Sex:</strong> {patient.sex}</span>
-        {patient.mobile && <span><strong>Mobile:</strong> {patient.mobile}</span>}
-        <span><strong>Date:</strong> {patient.date}</span>
-        {patient.address && <span><strong>Address:</strong> {patient.address}</span>}
+const headerSizeClass = {
+  small: "text-base",
+  medium: "text-xl",
+  large: "text-2xl",
+};
+
+const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSettings }: Props) => {
+  const filledOE = Object.entries(clinical.onExamination)
+    .filter(([_, v]) => v && v !== "Absent" && v.trim() !== "")
+    .map(([k, v]) => ({ label: OE_LABELS[k as keyof OnExaminationData], value: v }));
+
+  return (
+    <div className="print-preview bg-white text-black p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
+      {/* Doctor Header */}
+      {printSettings.showDoctorInfo && (
+        <div className="text-center border-b-2 border-black pb-3 mb-4">
+          <h1 className={`font-bold ${headerSizeClass[printSettings.headerSize]}`}>{doctor.name || "Doctor Name"}</h1>
+          <p className="text-xs text-gray-600">{doctor.degrees}</p>
+          <p className="text-xs font-medium">{doctor.specialization}</p>
+          <p className="text-[10px] text-gray-500">BMDC Reg. No: {doctor.bmdcNo}</p>
+          <p className="text-[10px] text-gray-500">{doctor.chamberAddress} {doctor.phone && `| ☎ ${doctor.phone}`}</p>
+        </div>
+      )}
+
+      {/* Patient Info Row */}
+      <div className="flex flex-wrap justify-between text-xs mb-4 pb-2 border-b border-gray-300">
+        <span><strong>Name :: </strong>{patient.name}</span>
+        <span><strong>Age :: </strong>{patient.age}</span>
+        <span><strong>Sex :: </strong>{patient.sex}</span>
+        <span><strong>Date :: </strong>{patient.date}</span>
       </div>
 
       {/* Clinical + Rx side by side */}
-      <div className="flex gap-6 min-h-[300px]">
+      <div className="flex min-h-[400px]">
         {/* Left: Clinical */}
-        <div className="w-[35%] border-r border-border pr-4 space-y-3 text-xs">
+        <div className="w-[35%] border-r border-gray-300 pr-4 space-y-4 text-xs">
           {clinical.chiefComplaint && (
-            <div><p className="font-bold text-accent-foreground">C/C:</p><p className="whitespace-pre-wrap">{clinical.chiefComplaint}</p></div>
-          )}
-          {clinical.onExamination && (
             <div>
-              <p className="font-bold text-accent-foreground">O/E:</p>
-              <div className="space-y-0.5">
-                {Object.entries(clinical.onExamination)
-                  .filter(([_, v]) => v && v !== "Absent")
-                  .map(([k, v]) => (
-                    <p key={k}><span className="font-medium capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}:</span> {v}</p>
-                  ))}
+              <p className="font-bold underline">C/C</p>
+              <p className="whitespace-pre-wrap mt-1">{clinical.chiefComplaint}</p>
+            </div>
+          )}
+
+          {filledOE.length > 0 && (
+            <div>
+              <p className="font-bold underline">O/E</p>
+              <div className="mt-1 space-y-0.5">
+                {filledOE.map((item) => (
+                  <p key={item.label}>
+                    <span className="font-bold">{item.label}</span>
+                    <span className="ml-2">: {item.value}</span>
+                  </p>
+                ))}
               </div>
             </div>
           )}
+
           {clinical.diagnosis && (
-            <div><p className="font-bold text-accent-foreground">D/X:</p><p className="whitespace-pre-wrap">{clinical.diagnosis}</p></div>
+            <div>
+              <p className="font-bold underline">D/H</p>
+              <p className="whitespace-pre-wrap mt-1">{clinical.diagnosis}</p>
+            </div>
           )}
+
           {clinical.investigation && (
-            <div><p className="font-bold text-accent-foreground">Inv:</p><p className="whitespace-pre-wrap">{clinical.investigation}</p></div>
+            <div>
+              <p className="font-bold underline">Investigation</p>
+              <p className="whitespace-pre-wrap mt-1">{clinical.investigation}</p>
+            </div>
           )}
         </div>
 
         {/* Right: Rx */}
-        <div className="flex-1">
-          <p className="text-3xl font-serif italic text-primary mb-3">℞</p>
-          <div className="space-y-2">
+        <div className="flex-1 pl-6">
+          <p className="text-3xl font-serif italic mb-4">℞</p>
+          <div className="space-y-4">
             {medicines.map((med, idx) => (
               <div key={med.id} className="text-xs">
-                <p className="font-medium">
-                  {idx + 1}. {med.type}. {med.name}
+                <p className="font-bold uppercase">
+                  {med.type}. {med.name}
                 </p>
-                <p className="text-muted-foreground pl-4">
-                  {med.dose} × {med.duration} — {med.mealTiming}
+                <p className="text-gray-600 mt-0.5">
+                  {med.dose} - ({med.mealTiming})
                 </p>
-                {med.instructions && <p className="text-muted-foreground pl-4 italic">{med.instructions}</p>}
               </div>
             ))}
           </div>
 
+          {/* Duration on right side */}
+          {medicines.length > 0 && (
+            <div className="mt-4">
+              {medicines.map((med) => (
+                <div key={med.id} className="text-xs text-right text-gray-500">
+                  ~ {med.duration}
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Advice */}
           {(advice.advice || advice.followUpDate) && (
-            <div className="mt-6 pt-3 border-t border-border text-xs">
+            <div className="mt-8 pt-3 border-t border-gray-300 text-xs">
               {advice.advice && (
-                <div className="mb-2"><p className="font-bold text-accent-foreground">Advice:</p><p className="whitespace-pre-wrap">{advice.advice}</p></div>
+                <div className="mb-2"><p className="font-bold">Advice:</p><p className="whitespace-pre-wrap">{advice.advice}</p></div>
               )}
               {advice.followUpDate && (
                 <p><strong>Follow-up:</strong> {advice.followUpDate}</p>
@@ -93,14 +141,16 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice }: Props) =
       </div>
 
       {/* Signature */}
-      <div className="mt-12 pt-4 border-t border-border flex justify-end">
-        <div className="text-center text-xs">
-          <div className="w-40 border-b border-foreground mb-1" />
-          <p className="font-bold">{doctor.name}</p>
-          <p className="text-muted-foreground">{doctor.degrees}</p>
-          <p className="text-muted-foreground">BMDC: {doctor.bmdcNo}</p>
+      {printSettings.showDoctorInfo && (
+        <div className="mt-12 pt-4 border-t border-gray-300 flex justify-end">
+          <div className="text-center text-xs">
+            <div className="w-40 border-b border-black mb-1" />
+            <p className="font-bold">{doctor.name}</p>
+            <p className="text-gray-500">{doctor.degrees}</p>
+            <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
