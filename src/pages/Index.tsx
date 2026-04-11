@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Settings, FileText } from "lucide-react";
+import { Printer, Settings, FileText, Stethoscope, Eye, SlidersHorizontal } from "lucide-react";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
@@ -19,35 +19,21 @@ const Index = () => {
   const [medicineOptions, setMedicineOptions] = useState<MedicineOptions>(loadMedicineOptions);
 
   const [doctor, setDoctor] = useState<DoctorInfo>({
-    name: "",
-    degrees: "",
-    specialization: "",
-    bmdcNo: "",
-    chamberAddress: "",
-    phone: "",
+    name: "", degrees: "", specialization: "", bmdcNo: "", chamberAddress: "", phone: "",
   });
 
   const [patient, setPatient] = useState<PatientData>({
-    name: "",
-    age: "",
-    sex: "",
-    mobile: "",
-    address: "",
-    date: today,
+    name: "", age: "", sex: "", mobile: "", address: "", date: today,
   });
 
   const [clinical, setClinical] = useState<ClinicalData>({
-    chiefComplaint: "",
-    onExamination: { ...defaultOnExamination },
-    diagnosis: "",
-    investigation: "",
+    chiefComplaint: "", onExamination: { ...defaultOnExamination }, diagnosis: "", investigation: "",
   });
 
   const [medicines, setMedicines] = useState<Medicine[]>([]);
 
   const [advice, setAdvice] = useState<AdviceData>({
-    advice: "",
-    followUpDate: "",
+    advice: "", followUpDate: "",
   });
 
   const [printSettings, setPrintSettings] = useState<PrintSettings>(() => {
@@ -77,32 +63,30 @@ const Index = () => {
     setActiveTab("write");
   };
 
-  const pageSizeStyles: Record<string, string> = {
-    A4: "max-w-[800px]",
-    A5: "max-w-[560px]",
-    Letter: "max-w-[816px]",
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar */}
-      <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="container max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-serif italic text-primary">℞</span>
-            <h1 className="text-lg font-bold text-foreground">Digital Prescription</h1>
-            <span className="text-xs text-muted-foreground hidden sm:inline">— Bangladesh PRD System</span>
+      {/* Header */}
+      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <span className="text-lg font-serif italic text-primary-foreground">℞</span>
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-foreground leading-tight">Digital Prescription</h1>
+              <span className="text-[10px] text-muted-foreground hidden sm:block">Bangladesh PRD System</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={() => setEditDoctor(!editDoctor)}>
+            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8" onClick={() => setEditDoctor(!editDoctor)}>
               <Settings className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Doctor Info</span>
+              <span className="hidden sm:inline">Doctor</span>
             </Button>
-            <Button variant="outline" size="sm" className="gap-1 text-xs" onClick={handleNewPrescription}>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={handleNewPrescription}>
               <FileText className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">New Rx</span>
             </Button>
-            <Button size="sm" className="gap-1 text-xs" onClick={handlePrint}>
+            <Button size="sm" className="gap-1.5 text-xs h-8 shadow-sm" onClick={handlePrint}>
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Print</span>
             </Button>
@@ -110,33 +94,53 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container max-w-5xl mx-auto px-4 py-6">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
         <DoctorHeader doctor={doctor} onChange={setDoctor} editMode={editDoctor} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="write">Write Prescription</TabsTrigger>
-            <TabsTrigger value="preview">Print Preview</TabsTrigger>
-            <TabsTrigger value="setup">Print Setup</TabsTrigger>
+          <TabsList className="mb-5 bg-card border border-border shadow-sm h-10">
+            <TabsTrigger value="write" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
+              <Stethoscope className="w-3.5 h-3.5" />
+              Write
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
+              <Eye className="w-3.5 h-3.5" />
+              Preview
+            </TabsTrigger>
+            <TabsTrigger value="setup" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              Print Setup
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="write" className="space-y-0">
+          <TabsContent value="write" className="space-y-5 mt-0">
+            {/* Patient Info - Full Width */}
             <PatientInfo patient={patient} onChange={setPatient} />
-            <ClinicalSection data={clinical} onChange={setClinical} />
-            <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={setMedicineOptions} />
-            <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
+
+            {/* Two Column Layout: Rx Left, Clinical Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
+              {/* Left Column - Prescription */}
+              <div className="space-y-5 min-w-0">
+                <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={setMedicineOptions} />
+                <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
+              </div>
+
+              {/* Right Column - Clinical Notes */}
+              <div className="min-w-0">
+                <ClinicalSection data={clinical} onChange={setClinical} />
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="preview">
+          <TabsContent value="preview" className="mt-0">
             <PrintPreview doctor={doctor} patient={patient} clinical={clinical} medicines={medicines} advice={advice} printSettings={printSettings} />
           </TabsContent>
 
-          <TabsContent value="setup">
+          <TabsContent value="setup" className="mt-0">
             <PrintSetup settings={printSettings} onChange={handlePrintSettingsChange} />
           </TabsContent>
         </Tabs>
       </main>
-
     </div>
   );
 };

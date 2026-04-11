@@ -17,18 +17,7 @@ interface Props {
 }
 
 const DoctorHeader = ({ doctor, onChange, editMode }: Props) => {
-  if (!editMode) {
-    return (
-      <div className="text-center border-b-2 border-primary pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-primary">{doctor.name || "Doctor Name"}</h2>
-        <p className="text-sm text-muted-foreground">{doctor.degrees}</p>
-        <p className="text-sm font-medium text-foreground">{doctor.specialization}</p>
-        <p className="text-xs text-muted-foreground">BMDC Reg. No: {doctor.bmdcNo}</p>
-        <p className="text-xs text-muted-foreground">{doctor.chamberAddress}</p>
-        {doctor.phone && <p className="text-xs text-muted-foreground">📞 {doctor.phone}</p>}
-      </div>
-    );
-  }
+  if (!editMode) return null;
 
   const fields: { key: keyof DoctorInfo; label: string; placeholder: string }[] = [
     { key: "name", label: "Doctor Name", placeholder: "Dr. Mohammad Rahman" },
@@ -40,17 +29,17 @@ const DoctorHeader = ({ doctor, onChange, editMode }: Props) => {
   ];
 
   return (
-    <div className="bg-section-bg rounded-lg p-4 mb-6 border border-border">
-      <h3 className="text-sm font-semibold text-primary mb-3">Doctor Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div className="section-card p-4 mb-5">
+      <h3 className="text-sm font-semibold text-foreground mb-3">Doctor Information</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {fields.map((f) => (
           <div key={f.key}>
-            <Label className="text-xs text-muted-foreground">{f.label}</Label>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">{f.label}</Label>
             <Input
               value={doctor[f.key]}
               onChange={(e) => onChange({ ...doctor, [f.key]: e.target.value })}
               placeholder={f.placeholder}
-              className="h-8 text-sm"
+              className="h-9 text-sm"
             />
           </div>
         ))}

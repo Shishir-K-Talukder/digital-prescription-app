@@ -2,6 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MessageSquare } from "lucide-react";
 import { MedicineOptions } from "./MedicineSettings";
 
 export interface AdviceData {
@@ -34,18 +35,16 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
   };
 
   return (
-    <div className="bg-section-bg rounded-lg p-4 mb-4 border border-border">
-      <h3 className="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-primary" />
+    <div className="section-card p-4">
+      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <MessageSquare className="w-4 h-4 text-primary" />
         Advice & Follow-up
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="md:col-span-2 space-y-2">
-          <Label className="text-xs text-muted-foreground">Quick Advice / দ্রুত পরামর্শ</Label>
+          <Label className="text-[11px] text-muted-foreground">Quick Advice / দ্রুত পরামর্শ</Label>
           <Select onValueChange={handleAdviceSelect}>
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Select advice..." />
-            </SelectTrigger>
+            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select advice..." /></SelectTrigger>
             <SelectContent>
               {options.adviceList.map((a) => (
                 <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
@@ -61,11 +60,9 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">Follow-up / ফলো-আপ</Label>
+          <Label className="text-[11px] text-muted-foreground">Follow-up / ফলো-আপ</Label>
           <Select onValueChange={handleFollowUpSelect}>
-            <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder="Select follow-up..." />
-            </SelectTrigger>
+            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select follow-up..." /></SelectTrigger>
             <SelectContent>
               {options.followUpOptions.map((opt) => (
                 <SelectItem key={opt.days} value={String(opt.days)} className="text-xs">{opt.label}</SelectItem>
