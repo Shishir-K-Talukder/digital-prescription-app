@@ -3,7 +3,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ClipboardList } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { ClipboardList, Plus, X } from "lucide-react";
+import { useState } from "react";
 
 export interface OnExaminationData {
   bp: string; weight: string; temp: string; pulse: string; heart: string; lungs: string; abd: string;
@@ -24,12 +27,123 @@ export const defaultOnExamination: OnExaminationData = {
   rr: "", spo2: "", lmp: "", edd: "", fm: "", fhr: "Absent", gravida: "",
 };
 
+const COMMON_INVESTIGATIONS = [
+  "CBC", "ESR", "CRP", "RBS", "FBS", "HbA1c",
+  "S. Creatinine", "S. Uric Acid", "S. Electrolyte",
+  "Lipid Profile", "LFT", "Thyroid Profile (FT4, TSH)",
+  "Urine R/M/E", "Urine C/S", "Stool R/M/E",
+  "X-Ray Chest P/A", "X-Ray L/S Spine", "X-Ray KUB",
+  "USG of W/A", "USG of KUB", "Echo",
+  "ECG", "CT Scan", "MRI",
+  "Blood Grouping", "HBsAg", "Anti-HCV",
+  "Widal Test", "Blood C/S", "Sputum for AFB",
+  "Dengue NS1 Ag", "Dengue IgM/IgG",
+  "S. Bilirubin", "S. Albumin", "PT/INR",
+  "ANA", "Anti-dsDNA", "RA Factor",
+];
+
 interface Props {
   data: ClinicalData;
   onChange: (d: ClinicalData) => void;
 }
 
 const presentAbsentOptions = ["Absent", "Present"];
+
+const InvestigationTab = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [customInv, setCustomInv] = useState("");
+
+  // Parse current investigation string into array of items
+  const currentItems = value
+    ? value.split("\n").map((s) => s.replace(/^•\s*/, "").trim()).filter(Boolean)
+    : [];
+
+  const updateInvestigation = (items: string[]) => {
+    onChange(items.map((item) => `• ${item}`).join("\n"));
+  };
+
+  const toggleItem = (item: string) => {
+    if (currentItems.includes(item)) {
+      updateInvestigation(currentItems.filter((i) => i !== item));
+    } else {
+      updateInvestigation([...currentItems, item]);
+    }
+  };
+
+  const addCustom = () => {
+    const trimmed = customInv.trim();
+    if (trimmed && !currentItems.includes(trimmed)) {
+      updateInvestigation([...currentItems, trimmed]);
+      setCustomInv("");
+    }
+  };
+
+  const removeItem = (item: string) => {
+    updateInvestigation(currentItems.filter((i) => i !== item));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Selected items as bullet chips */}
+      {currentItems.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 p-2 bg-accent/20 rounded-lg border border-border/50 min-h-[36px]">
+          {currentItems.map((item) => (
+            <span
+              key={item}
+              className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[11px] font-medium px-2 py-0.5 rounded-full border border-primary/20"
+            >
+              • {item}
+              <button
+                type="button"
+                onClick={() => removeItem(item)}
+                className="hover:text-destructive transition-colors"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Custom investigation input */}
+      <div className="flex gap-1.5">
+        <Input
+          value={customInv}
+          onChange={(e) => setCustomInv(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(); } }}
+          placeholder="Add custom investigation..."
+          className="h-8 text-xs flex-1"
+        />
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1 shrink-0" onClick={addCustom} disabled={!customInv.trim()}>
+          <Plus className="w-3 h-3" /> Add
+        </Button>
+      </div>
+
+      {/* Common investigations checkboxes */}
+      <div className="max-h-[280px] overflow-y-auto rounded-lg border border-border">
+        <div className="grid grid-cols-2 gap-0">
+          {COMMON_INVESTIGATIONS.map((inv, idx) => {
+            const checked = currentItems.includes(inv);
+            return (
+              <label
+                key={inv}
+                className={`flex items-center gap-2 px-2.5 py-1.5 text-xs cursor-pointer hover:bg-accent/40 transition-colors border-b border-border/30 ${
+                  idx % 2 === 0 ? "border-r border-border/30" : ""
+                } ${checked ? "bg-primary/5 font-medium" : ""}`}
+              >
+                <Checkbox
+                  checked={checked}
+                  onCheckedChange={() => toggleItem(inv)}
+                  className="h-3.5 w-3.5"
+                />
+                <span className={checked ? "text-primary" : "text-foreground"}>{inv}</span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ClinicalSection = ({ data, onChange }: Props) => {
   const updateOE = (key: keyof OnExaminationData, value: string) => {
@@ -133,11 +247,9 @@ const ClinicalSection = ({ data, onChange }: Props) => {
 
         <TabsContent value="inv" className="mt-0">
           <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Investigation</Label>
-          <Textarea
+          <InvestigationTab
             value={data.investigation}
-            onChange={(e) => onChange({ ...data, investigation: e.target.value })}
-            placeholder="CBC, X-Ray Chest..."
-            className="text-sm min-h-[140px] resize-none"
+            onChange={(v) => onChange({ ...data, investigation: v })}
           />
         </TabsContent>
       </Tabs>
