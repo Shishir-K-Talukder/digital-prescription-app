@@ -96,7 +96,7 @@ const MedicineSettingsPage = ({ options, onChange }: Props) => {
     { value: "durations", label: "Duration", icon: Clock, content: <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" /> },
     { value: "meals", label: "Meal", icon: Utensils, content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
     { value: "advice", label: "Advice", icon: MessageSquare, content: <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" /> },
-    { value: "followup", label: "Follow-up", icon: CalendarDays, content: <FollowUpEditor items={options.followUpOptions} onChange={(items) => onChange({ ...options, followUpOptions: items })} /> },
+    { value: "followup", label: "Follow-up", icon: CalendarDays, content: <ListEditor items={options.followUpOptions} onChange={(v) => handleChange("followUpOptions", v)} placeholder="e.g. ৭ দিন পর" /> },
   ];
 
   return (

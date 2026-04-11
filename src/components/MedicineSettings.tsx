@@ -273,11 +273,6 @@ const MedicineSettings = ({ options, onChange }: Props) => {
     saveMedicineOptions(updated);
   };
 
-  const handleFollowUpChange = (items: { label: string; days: number }[]) => {
-    const updated = { ...options, followUpOptions: items };
-    onChange(updated);
-    saveMedicineOptions(updated);
-  };
 
   const tabs = [
     { value: "types", label: "Types", icon: Pill, description: "Medicine types (Tab, Cap, Syr...)", content: <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" /> },
@@ -285,7 +280,7 @@ const MedicineSettings = ({ options, onChange }: Props) => {
     { value: "durations", label: "Duration", icon: Clock, description: "Duration options", content: <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" /> },
     { value: "meals", label: "Meal", icon: Utensils, description: "Meal timing options", content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
     { value: "advice", label: "Advice", icon: MessageSquare, description: "Advice options (পরামর্শ)", content: <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" /> },
-    { value: "followup", label: "Follow-up", icon: CalendarDays, description: "Follow-up duration options", content: <FollowUpEditor items={options.followUpOptions} onChange={handleFollowUpChange} /> },
+    { value: "followup", label: "Follow-up", icon: CalendarDays, description: "Follow-up options (ফলো-আপ)", content: <ListEditor items={options.followUpOptions} onChange={(v) => handleChange("followUpOptions", v)} placeholder="e.g. ৭ দিন পর" /> },
   ];
 
   return (
