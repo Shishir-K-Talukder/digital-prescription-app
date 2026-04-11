@@ -24,7 +24,7 @@ interface Props {
   onOptionsChange: (o: MedicineOptions) => void;
 }
 
-const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onChange: (v: string) => void; onSelect: (med: { name: string; strength: string; detectedType: string }) => void }) => {
+const MedicineNameInput = ({ value, type, onChange, onSelect }: { value: string; type: string; onChange: (v: string) => void; onSelect: (med: { name: string; strength: string; detectedType: string }) => void }) => {
   const [query, setQuery] = useState(value);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { suggestions, loading } = useMedicineSearch(query);
@@ -40,14 +40,17 @@ const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onCha
 
   return (
     <div ref={wrapperRef} className="relative">
-      <Input
-        value={query}
-        onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setShowSuggestions(true); }}
-        onFocus={() => setShowSuggestions(true)}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-        placeholder="Type medicine name..."
-        className="h-8 text-xs"
-      />
+      <div className="relative flex items-center">
+        {type && <span className="absolute left-2 z-10 bg-primary/15 text-primary font-bold rounded px-1.5 py-0.5 text-[10px]">{type}.</span>}
+        <Input
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setShowSuggestions(true); }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          placeholder="Type medicine name..."
+          className={`h-8 text-xs ${type ? 'pl-12' : ''}`}
+        />
+      </div>
       {showSuggestions && (query.length >= 2) && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
           {loading && (
@@ -152,7 +155,7 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
               <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2">
                 <div className="col-span-2">
                   <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
-                  <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(selected) => updateMedicine(med.id, "type", selected.detectedType)} />
+                  <MedicineNameInput value={med.name} type={med.type} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(selected) => updateMedicine(med.id, "type", selected.detectedType)} />
                 </div>
                 <div>
                   <Label className="text-[11px] text-muted-foreground">Dose</Label>
