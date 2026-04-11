@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { MedicineOptions } from "./MedicineSettings";
 
 export interface AdviceData {
   advice: string;
@@ -12,45 +12,12 @@ export interface AdviceData {
 interface Props {
   data: AdviceData;
   onChange: (d: AdviceData) => void;
+  options: MedicineOptions;
 }
 
-const COMMON_ADVICE = [
-  "প্রচুর পানি পান করুন",
-  "বিশ্রাম নিন",
-  "তৈলাক্ত খাবার পরিহার করুন",
-  "নিয়মিত ব্যায়াম করুন",
-  "লবণ কম খান",
-  "ধূমপান পরিহার করুন",
-  "সময়মতো ওষুধ সেবন করুন",
-  "পরবর্তী ভিজিটে রিপোর্ট নিয়ে আসুন",
-];
-
-const FOLLOW_UP_OPTIONS = [
-  { label: "3 দিন পর", days: 3 },
-  { label: "5 দিন পর", days: 5 },
-  { label: "7 দিন পর", days: 7 },
-  { label: "10 দিন পর", days: 10 },
-  { label: "15 দিন পর", days: 15 },
-  { label: "1 মাস পর", days: 30 },
-  { label: "2 মাস পর", days: 60 },
-  { label: "3 মাস পর", days: 90 },
-];
-
-const getFollowUpDate = (days: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
-};
-
-const AdviceSection = ({ data, onChange }: Props) => {
-  const [customAdvice, setCustomAdvice] = useState(false);
-
+const AdviceSection = ({ data, onChange, options }: Props) => {
   const handleAdviceSelect = (value: string) => {
-    if (value === "__custom__") {
-      setCustomAdvice(true);
-      return;
-    }
-    setCustomAdvice(false);
+    if (value === "__custom__") return;
     const current = data.advice;
     const newAdvice = current ? `${current}\n${value}` : value;
     onChange({ ...data, advice: newAdvice });
@@ -62,7 +29,7 @@ const AdviceSection = ({ data, onChange }: Props) => {
       return;
     }
     const days = parseInt(value);
-    const option = FOLLOW_UP_OPTIONS.find(o => o.days === days);
+    const option = options.followUpOptions.find(o => o.days === days);
     onChange({ ...data, followUpDate: option ? `${option.days} days` : `${days} days` });
   };
 
@@ -80,7 +47,7 @@ const AdviceSection = ({ data, onChange }: Props) => {
               <SelectValue placeholder="Select advice..." />
             </SelectTrigger>
             <SelectContent>
-              {COMMON_ADVICE.map((a) => (
+              {options.adviceList.map((a) => (
                 <SelectItem key={a} value={a} className="text-xs">{a}</SelectItem>
               ))}
               <SelectItem value="__custom__" className="text-xs font-medium">✏️ Custom Advice</SelectItem>
@@ -100,7 +67,7 @@ const AdviceSection = ({ data, onChange }: Props) => {
               <SelectValue placeholder="Select follow-up..." />
             </SelectTrigger>
             <SelectContent>
-              {FOLLOW_UP_OPTIONS.map((opt) => (
+              {options.followUpOptions.map((opt) => (
                 <SelectItem key={opt.days} value={String(opt.days)} className="text-xs">{opt.label}</SelectItem>
               ))}
               <SelectItem value="__custom__" className="text-xs font-medium">📅 Custom Date</SelectItem>
