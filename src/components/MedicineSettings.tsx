@@ -16,6 +16,7 @@ export interface MedicineOptions {
 }
 
 const STORAGE_KEY = "medicine-options";
+const SETTINGS_VERSION = "v2";
 
 const DEFAULT_OPTIONS: MedicineOptions = {
   types: ["Tab", "Cap", "Syr", "Inj", "Supp", "Drop", "Cream", "Oint"],
