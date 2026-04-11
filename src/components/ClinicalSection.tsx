@@ -59,26 +59,34 @@ const ClinicalSection = ({ data, onChange }: Props) => {
 
   return (
     <div className="section-card p-4 sticky top-[60px]">
-      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
         <ClipboardList className="w-4 h-4 text-primary" />
         Clinical Notes
       </h3>
 
       <Tabs defaultValue="cc" className="w-full">
-        <TabsList className="mb-3 flex flex-wrap h-auto gap-1 bg-muted/50 p-1">
-          <TabsTrigger value="cc" className="text-[11px] h-7 px-2.5">C/C</TabsTrigger>
-          <TabsTrigger value="oe" className="text-[11px] h-7 px-2.5">O/E</TabsTrigger>
-          <TabsTrigger value="dx" className="text-[11px] h-7 px-2.5">D/X</TabsTrigger>
-          <TabsTrigger value="inv" className="text-[11px] h-7 px-2.5">Inv</TabsTrigger>
+        <TabsList className="mb-4 w-full grid grid-cols-4 h-10 bg-muted/60 p-1 rounded-lg">
+          <TabsTrigger value="cc" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            C/C
+          </TabsTrigger>
+          <TabsTrigger value="oe" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            O/E
+          </TabsTrigger>
+          <TabsTrigger value="dx" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            D/X
+          </TabsTrigger>
+          <TabsTrigger value="inv" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            Inv
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="cc" className="mt-0">
-          <Label className="text-[11px] text-muted-foreground mb-1.5 block">Chief Complaint</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Chief Complaint</Label>
           <Textarea
             value={data.chiefComplaint}
             onChange={(e) => onChange({ ...data, chiefComplaint: e.target.value })}
             placeholder="জ্বর, কাশি ৩ দিন যাবৎ..."
-            className="text-sm min-h-[120px] resize-none"
+            className="text-sm min-h-[140px] resize-none"
           />
         </TabsContent>
 
@@ -87,9 +95,9 @@ const ClinicalSection = ({ data, onChange }: Props) => {
             {oeFields.map((f, idx) => (
               <div
                 key={f.key}
-                className={`flex items-center text-sm ${idx % 2 === 0 ? "bg-card" : "bg-muted/20"} ${idx < oeFields.length - 1 ? "border-b border-border/60" : ""}`}
+                className={`flex items-center text-sm ${idx % 2 === 0 ? "bg-card" : "bg-muted/20"} ${idx < oeFields.length - 1 ? "border-b border-border/50" : ""}`}
               >
-                <div className="w-20 px-2.5 py-1.5 font-medium text-[11px] text-foreground border-r border-border/60 shrink-0">
+                <div className="w-[72px] px-2.5 py-1.5 font-semibold text-xs text-primary border-r border-border/50 shrink-0 bg-accent/30">
                   {f.label}
                 </div>
                 <div className="flex-1 px-1.5 py-0.5">
@@ -114,22 +122,22 @@ const ClinicalSection = ({ data, onChange }: Props) => {
         </TabsContent>
 
         <TabsContent value="dx" className="mt-0">
-          <Label className="text-[11px] text-muted-foreground mb-1.5 block">Diagnosis</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Diagnosis</Label>
           <Textarea
             value={data.diagnosis}
             onChange={(e) => onChange({ ...data, diagnosis: e.target.value })}
             placeholder="Viral Fever"
-            className="text-sm min-h-[120px] resize-none"
+            className="text-sm min-h-[140px] resize-none"
           />
         </TabsContent>
 
         <TabsContent value="inv" className="mt-0">
-          <Label className="text-[11px] text-muted-foreground mb-1.5 block">Investigation</Label>
+          <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Investigation</Label>
           <Textarea
             value={data.investigation}
             onChange={(e) => onChange({ ...data, investigation: e.target.value })}
             placeholder="CBC, X-Ray Chest..."
-            className="text-sm min-h-[120px] resize-none"
+            className="text-sm min-h-[140px] resize-none"
           />
         </TabsContent>
       </Tabs>
