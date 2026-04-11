@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Plus, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface OnExaminationData {
   bp: string; weight: string; temp: string; pulse: string; heart: string; lungs: string; abd: string;
@@ -17,6 +17,7 @@ export interface OnExaminationData {
 export interface ClinicalData {
   chiefComplaint: string;
   onExamination: OnExaminationData;
+  drugHistory: string;
   diagnosis: string;
   investigation: string;
 }
@@ -48,6 +49,79 @@ interface Props {
 }
 
 const presentAbsentOptions = ["Absent", "Present"];
+
+// O/E suggestion history stored in localStorage
+const OE_HISTORY_KEY = "oe-field-history";
+
+const getOEHistory = (): Record<string, string[]> => {
+  try {
+    return JSON.parse(localStorage.getItem(OE_HISTORY_KEY) || "{}");
+  } catch { return {}; }
+};
+
+const saveOEValue = (fieldKey: string, value: string) => {
+  if (!value || value === "Absent" || value === "Present") return;
+  const history = getOEHistory();
+  const existing = history[fieldKey] || [];
+  if (!existing.includes(value)) {
+    history[fieldKey] = [value, ...existing].slice(0, 10);
+    localStorage.setItem(OE_HISTORY_KEY, JSON.stringify(history));
+  }
+};
+
+const OEInputWithSuggestions = ({ fieldKey, value, placeholder, onChange }: {
+  fieldKey: string; value: string; placeholder: string; onChange: (v: string) => void;
+}) => {
+  const [focused, setFocused] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focused) {
+      const history = getOEHistory();
+      const items = (history[fieldKey] || []).filter(
+        (s) => !value || s.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(items);
+    }
+  }, [focused, value, fieldKey]);
+
+  const handleBlur = useCallback(() => {
+    setTimeout(() => {
+      if (!wrapperRef.current?.contains(document.activeElement)) {
+        setFocused(false);
+        if (value) saveOEValue(fieldKey, value);
+      }
+    }, 150);
+  }, [fieldKey, value]);
+
+  return (
+    <div ref={wrapperRef} className="relative flex-1">
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className="h-7 text-xs border-0 shadow-none bg-transparent"
+      />
+      {focused && suggestions.length > 0 && (
+        <div className="absolute z-50 top-full left-0 right-0 bg-popover border border-border rounded-md shadow-md mt-0.5 max-h-[120px] overflow-y-auto">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              type="button"
+              className="w-full text-left px-2 py-1 text-xs hover:bg-accent transition-colors"
+              onMouseDown={(e) => { e.preventDefault(); onChange(s); setFocused(false); saveOEValue(fieldKey, s); }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const InvestigationTab = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
   const [customInv, setCustomInv] = useState("");
@@ -179,12 +253,15 @@ const ClinicalSection = ({ data, onChange }: Props) => {
       </h3>
 
       <Tabs defaultValue="cc" className="w-full">
-        <TabsList className="mb-4 w-full grid grid-cols-4 h-10 bg-muted/60 p-1 rounded-lg">
+        <TabsList className="mb-4 w-full grid grid-cols-5 h-10 bg-muted/60 p-1 rounded-lg">
           <TabsTrigger value="cc" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
             C/C
           </TabsTrigger>
           <TabsTrigger value="oe" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
             O/E
+          </TabsTrigger>
+          <TabsTrigger value="dh" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            D/H
           </TabsTrigger>
           <TabsTrigger value="dx" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
             D/X
@@ -227,12 +304,22 @@ const ClinicalSection = ({ data, onChange }: Props) => {
                   ) : f.type === "date" ? (
                     <Input type="date" value={data.onExamination[f.key]} onChange={(e) => updateOE(f.key, e.target.value)} className="h-7 text-xs border-0 shadow-none bg-transparent" />
                   ) : (
-                    <Input value={data.onExamination[f.key]} onChange={(e) => updateOE(f.key, e.target.value)} placeholder={f.placeholder} className="h-7 text-xs border-0 shadow-none bg-transparent" />
+                    <OEInputWithSuggestions fieldKey={f.key} value={data.onExamination[f.key]} placeholder={f.placeholder} onChange={(v) => updateOE(f.key, v)} />
                   )}
                 </div>
               </div>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="dh" className="mt-0">
+          <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Drug History</Label>
+          <Textarea
+            value={data.drugHistory}
+            onChange={(e) => onChange({ ...data, drugHistory: e.target.value })}
+            placeholder="রোগী আগে কী কী ওষুধ খেয়েছে / বর্তমানে কী চলছে..."
+            className="text-sm min-h-[140px] resize-none"
+          />
         </TabsContent>
 
         <TabsContent value="dx" className="mt-0">

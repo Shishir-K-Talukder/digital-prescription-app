@@ -37,7 +37,7 @@ const Index = () => {
   });
 
   const [clinical, setClinical] = useState<ClinicalData>({
-    chiefComplaint: "", onExamination: { ...defaultOnExamination }, diagnosis: "", investigation: "",
+    chiefComplaint: "", onExamination: { ...defaultOnExamination }, drugHistory: "", diagnosis: "", investigation: "",
   });
 
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -77,7 +77,7 @@ const Index = () => {
 
   const handleNewPrescription = () => {
     setPatient({ name: "", age: "", sex: "", mobile: "", address: "", date: today });
-    setClinical({ chiefComplaint: "", onExamination: { ...defaultOnExamination }, diagnosis: "", investigation: "" });
+    setClinical({ chiefComplaint: "", onExamination: { ...defaultOnExamination }, drugHistory: "", diagnosis: "", investigation: "" });
     setMedicines([]);
     setAdvice({ advice: "", followUpDate: "" });
     setActiveTab("write");

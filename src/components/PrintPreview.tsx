@@ -129,6 +129,12 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
               </div>
             </div>
           )}
+          {clinical.drugHistory && (
+            <div>
+              <p className="font-bold underline">D/H</p>
+              <p className="whitespace-pre-wrap mt-1">{clinical.drugHistory}</p>
+            </div>
+          )}
           {settings.showDiagnosis && clinical.diagnosis && (
             <div>
               <p className="font-bold underline">D/X</p>
