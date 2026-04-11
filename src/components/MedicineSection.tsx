@@ -159,10 +159,7 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
                 </div>
                 <div>
                   <Label className="text-[11px] text-muted-foreground">Dose</Label>
-                  <Select value={med.dose} onValueChange={(v) => updateMedicine(med.id, "dose", v)}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{options.doses.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <DoseInput value={med.dose} options={options.doses} onChange={(v) => updateMedicine(med.id, "dose", v)} />
                 </div>
                 <div>
                   <Label className="text-[11px] text-muted-foreground">Duration</Label>
