@@ -1,30 +1,30 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Settings, FileText, Stethoscope, Eye, SlidersHorizontal, Save, History, LogOut } from "lucide-react";
+import { Printer, FileText, Stethoscope, Eye, Save, History, LogOut, LayoutDashboard, User } from "lucide-react";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview from "@/components/PrintPreview";
-import PrintSetup from "@/components/PrintSetup";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useDoctorSettings } from "@/hooks/useDoctorSettings";
 import { usePrescriptions, PrescriptionRecord } from "@/hooks/usePrescriptions";
+import { useNavigate } from "react-router-dom";
 
 const today = new Date().toISOString().split("T")[0];
 
 const Index = () => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const { profile, saveProfile, loading: profileLoading } = useProfile();
   const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
   const { prescriptions, savePrescription, deletePrescription, loading: rxLoading } = usePrescriptions();
 
   const [activeTab, setActiveTab] = useState("write");
-  const [editDoctor, setEditDoctor] = useState(false);
 
   const [doctor, setDoctor] = useState<DoctorInfo>({
     name: "", degrees: "", specialization: "", bmdcNo: "", chamberAddress: "", phone: "",
@@ -44,7 +44,6 @@ const Index = () => {
     advice: "", followUpDate: "",
   });
 
-  // Load profile data when ready
   useEffect(() => {
     if (!profileLoading && profile.name) {
       setDoctor(profile);
@@ -100,9 +99,13 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8" onClick={() => setEditDoctor(!editDoctor)}>
-              <Settings className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Doctor</span>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/dashboard")}>
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/profile")}>
+              <User className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Profile</span>
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={handleNewPrescription}>
               <FileText className="w-3.5 h-3.5" />
@@ -124,25 +127,16 @@ const Index = () => {
       </header>
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
-        <DoctorHeader doctor={doctor} onChange={handleDoctorChange} editMode={editDoctor} />
-
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-5 bg-card border border-border shadow-sm h-10">
             <TabsTrigger value="write" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <Stethoscope className="w-3.5 h-3.5" />
-              Write
+              <Stethoscope className="w-3.5 h-3.5" /> Write
             </TabsTrigger>
             <TabsTrigger value="preview" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <Eye className="w-3.5 h-3.5" />
-              Preview
+              <Eye className="w-3.5 h-3.5" /> Preview
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <History className="w-3.5 h-3.5" />
-              History
-            </TabsTrigger>
-            <TabsTrigger value="setup" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              Print Setup
+              <History className="w-3.5 h-3.5" /> History
             </TabsTrigger>
           </TabsList>
 
@@ -176,10 +170,6 @@ const Index = () => {
                 loading={rxLoading}
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="setup" className="mt-0">
-            <PrintSetup settings={printSettings} onChange={savePrintSettings} />
           </TabsContent>
         </Tabs>
       </main>
