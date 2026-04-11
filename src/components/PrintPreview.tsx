@@ -10,6 +10,7 @@ export interface PrintSettings {
   customHeight: string;
   headerSize: "small" | "medium" | "large" | "custom";
   customHeaderHeight?: string;
+  customHeaderWidth?: string;
   showDoctorInfo: boolean;
   showDoctorText: boolean;
   showCC: boolean;
@@ -75,13 +76,17 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
   const doctorHasInfo = isDoctorFilled(doctor);
 
   const headerHeight = settings.headerSize === "custom"
-    ? parseInt(settings.customHeaderHeight || "80")
+    ? `${settings.customHeaderHeight || "25"}mm`
     : headerSizeMap[settings.headerSize] || 70;
+
+  const headerWidth = settings.headerSize === "custom" && settings.customHeaderWidth
+    ? `${settings.customHeaderWidth}mm`
+    : undefined;
 
   return (
     <div className="print-preview bg-white text-black p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
       {settings.showDoctorInfo && (
-        <div className="text-center border-b-2 border-black pb-3 mb-4" style={{ minHeight: headerHeight }}>
+        <div className="text-center border-b-2 border-black pb-3 mb-4 mx-auto" style={{ minHeight: headerHeight, ...(headerWidth ? { maxWidth: headerWidth } : {}) }}>
           {settings.showDoctorText && doctorHasInfo ? (
             <>
               <h1 className={`font-bold ${headerTextClass[settings.headerSize]}`}>{doctor.name}</h1>

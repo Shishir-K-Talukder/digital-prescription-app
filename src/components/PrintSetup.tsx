@@ -65,10 +65,16 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         </div>
 
         {settings.headerSize === "custom" && (
-          <div>
-            <Label className="text-[11px] text-muted-foreground mb-1 block">Header Height (px)</Label>
-            <Input value={settings.customHeaderHeight || "80"} onChange={(e) => onChange({ ...settings, customHeaderHeight: e.target.value })} placeholder="80" className="h-9 text-xs" type="number" />
-          </div>
+          <>
+            <div>
+              <Label className="text-[11px] text-muted-foreground mb-1 block">Header Height (mm)</Label>
+              <Input value={settings.customHeaderHeight || "25"} onChange={(e) => onChange({ ...settings, customHeaderHeight: e.target.value })} placeholder="25" className="h-9 text-xs" type="number" />
+            </div>
+            <div>
+              <Label className="text-[11px] text-muted-foreground mb-1 block">Header Width (mm)</Label>
+              <Input value={settings.customHeaderWidth || "210"} onChange={(e) => onChange({ ...settings, customHeaderWidth: e.target.value })} placeholder="210" className="h-9 text-xs" type="number" />
+            </div>
+          </>
         )}
       </div>
 
