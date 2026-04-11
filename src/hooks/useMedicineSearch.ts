@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export interface MedicineSuggestion {
   name: string;
@@ -25,18 +25,23 @@ interface RawMedicine {
   s: string;
   g: string;
   c: string;
+  _lower?: string; // cached lowercase name
 }
 
 let cachedData: RawMedicine[] | null = null;
 let loadingPromise: Promise<RawMedicine[]> | null = null;
 
-const loadMedicines = async (): Promise<RawMedicine[]> => {
-  if (cachedData) return cachedData;
+const loadMedicines = (): Promise<RawMedicine[]> => {
+  if (cachedData) return Promise.resolve(cachedData);
   if (loadingPromise) return loadingPromise;
 
-  loadingPromise = fetch("/medicines.json")
+  loadingPromise = fetch(import.meta.env.BASE_URL + "medicines.json")
     .then((r) => r.json())
     .then((data: RawMedicine[]) => {
+      // Pre-compute lowercase names for faster search
+      for (const med of data) {
+        med._lower = med.n.toLowerCase();
+      }
       cachedData = data;
       return data;
     });
@@ -44,25 +49,32 @@ const loadMedicines = async (): Promise<RawMedicine[]> => {
   return loadingPromise;
 };
 
+// Preload on module import so data is ready when user starts typing
+loadMedicines();
+
 const searchMedicines = (data: RawMedicine[], query: string): MedicineSuggestion[] => {
   const q = query.toLowerCase();
-  const results: MedicineSuggestion[] = [];
+  const startsWithResults: MedicineSuggestion[] = [];
+  const containsResults: MedicineSuggestion[] = [];
 
   for (const med of data) {
-    if (results.length >= 20) break;
-    if (med.n.toLowerCase().includes(q)) {
-      results.push({ name: med.n, strength: med.s, generic: med.g, company: med.c, detectedType: detectType(med.s) });
+    if (startsWithResults.length + containsResults.length >= 20) break;
+
+    const lower = med._lower || med.n.toLowerCase();
+    if (lower.startsWith(q)) {
+      startsWithResults.push({
+        name: med.n, strength: med.s, generic: med.g,
+        company: med.c, detectedType: detectType(med.s),
+      });
+    } else if (lower.includes(q)) {
+      containsResults.push({
+        name: med.n, strength: med.s, generic: med.g,
+        company: med.c, detectedType: detectType(med.s),
+      });
     }
   }
 
-  // Sort: starts-with first
-  results.sort((a, b) => {
-    const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
-    const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
-    return aStarts - bStarts;
-  });
-
-  return results;
+  return [...startsWithResults, ...containsResults].slice(0, 20);
 };
 
 export const useMedicineSearch = (query: string) => {
@@ -84,7 +96,7 @@ export const useMedicineSearch = (query: string) => {
       const results = searchMedicines(data, query);
       setSuggestions(results);
       setLoading(false);
-    }, 150);
+    }, 100);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
