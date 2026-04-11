@@ -35,7 +35,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/rx-bengal-bliss">
           <Routes>
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
