@@ -90,8 +90,8 @@ const DoseInput = ({ value, options, onChange }: { value: string; options: strin
           className="h-8 text-xs flex-1"
           autoFocus
         />
-        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setIsCustom(false); onChange(options[0] || ""); }}>
-          <SelectValue />
+        <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground" title="Back to list" onClick={() => { setIsCustom(false); onChange(options[0] || ""); }}>
+          ✕
         </Button>
       </div>
     );
