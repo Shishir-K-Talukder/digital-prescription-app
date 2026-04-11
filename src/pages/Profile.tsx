@@ -6,14 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { DoctorInfo } from "@/components/DoctorHeader";
-import { useNavigate } from "react-router-dom";
-import { Save, ArrowLeft, User, LogOut } from "lucide-react";
+import FloatingNav from "@/components/FloatingNav";
+import { Save, User } from "lucide-react";
 import { toast } from "sonner";
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { profile, saveProfile, loading } = useProfile();
-  const navigate = useNavigate();
+  
   const [doctor, setDoctor] = useState<DoctorInfo>({
     name: "", degrees: "", specialization: "", bmdcNo: "", chamberAddress: "", phone: "",
   });
@@ -43,25 +43,8 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-lg font-serif italic text-primary-foreground">℞</span>
-            </div>
-            <h1 className="text-base font-bold text-foreground">Doctor Profile</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-3.5 h-3.5" /> Back
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-destructive" onClick={signOut}>
-              <LogOut className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background pt-16">
+      <FloatingNav />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         <Card>

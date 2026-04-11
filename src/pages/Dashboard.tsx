@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useDoctorSettings } from "@/hooks/useDoctorSettings";
 import { usePrescriptions } from "@/hooks/usePrescriptions";
-import { useNavigate } from "react-router-dom";
+import FloatingNav from "@/components/FloatingNav";
 import PrintSetup from "@/components/PrintSetup";
 import MedicineSettingsPage from "@/components/MedicineSettingsPage";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
@@ -18,7 +18,7 @@ const Dashboard = () => {
   const { profile, loading: profileLoading } = useProfile();
   const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
   const { prescriptions, loading: rxLoading } = usePrescriptions();
-  const navigate = useNavigate();
+  
   const [activeTab, setActiveTab] = useState("overview");
 
   const monthlyData = useMemo(() => {
@@ -48,30 +48,8 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-lg font-serif italic text-primary-foreground">℞</span>
-            </div>
-            <h1 className="text-base font-bold text-foreground">Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/")}>
-              <Stethoscope className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Write Rx</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/profile")}>
-              <User className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Profile</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-destructive" onClick={signOut}>
-              <LogOut className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background pt-16">
+      <FloatingNav />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab}>

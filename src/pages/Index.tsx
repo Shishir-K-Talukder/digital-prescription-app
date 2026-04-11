@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, FileText, Stethoscope, Eye, Save, History, LogOut, LayoutDashboard, User } from "lucide-react";
+import FloatingNav from "@/components/FloatingNav";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
@@ -86,45 +87,14 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-lg font-serif italic text-primary-foreground">℞</span>
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-foreground leading-tight">Digital Prescription</h1>
-              <span className="text-[10px] text-muted-foreground hidden sm:block">Bangladesh PRD System</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/dashboard")}>
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => navigate("/profile")}>
-              <User className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Profile</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={handleNewPrescription}>
-              <FileText className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">New Rx</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={handleSave}>
-              <Save className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Save</span>
-            </Button>
-            <Button size="sm" className="gap-1.5 text-xs h-8 shadow-sm" onClick={handlePrint}>
-              <Printer className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Print</span>
-            </Button>
-            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-destructive" onClick={signOut}>
-              <LogOut className="w-3.5 h-3.5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background pt-16">
+      <FloatingNav
+        actions={[
+          { icon: <FileText className="w-4 h-4" />, label: "New Rx", onClick: handleNewPrescription },
+          { icon: <Save className="w-4 h-4" />, label: "Save", onClick: handleSave },
+          { icon: <Printer className="w-4 h-4" />, label: "Print", onClick: handlePrint },
+        ]}
+      />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
