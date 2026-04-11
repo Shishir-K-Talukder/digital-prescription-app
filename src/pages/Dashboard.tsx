@@ -128,7 +128,7 @@ const Dashboard = () => {
     const entry: OtherVisitEntry = {
       id: Date.now().toString(),
       date: newVisitDate,
-      description: newVisitDesc.trim() || "অন-কল ভিজিট",
+      description: newVisitDesc.trim() || "On-call Visit",
       amount: newVisitAmount.trim(),
       month: selectedMonth,
     };
@@ -232,7 +232,7 @@ const Dashboard = () => {
           <TabsContent value="income" className="mt-0 space-y-5">
             {/* Month selector */}
             <div className="flex items-center gap-3">
-              <Label className="text-sm font-medium">মাস নির্বাচন:</Label>
+              <Label className="text-sm font-medium">Select Month:</Label>
               <Input
                 type="month"
                 value={selectedMonth}
@@ -246,40 +246,40 @@ const Dashboard = () => {
               <Card>
                 <CardHeader className="pb-1 pt-3 px-3">
                   <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Stethoscope className="w-3 h-3" /> ভিজিট ফি
+                    <Stethoscope className="w-3 h-3" /> Visit Fee
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
                   <p className="text-lg font-bold text-foreground">৳{visitIncome.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{currentMonthData?.patients || 0} জন রোগী</p>
+                  <p className="text-[9px] text-muted-foreground">{currentMonthData?.patients || 0} patients</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-1 pt-3 px-3">
                   <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Phone className="w-3 h-3" /> অন-কল/অন্যান্য
+                    <Phone className="w-3 h-3" /> On-call/Other
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
                   <p className="text-lg font-bold text-foreground">৳{totalOtherVisit.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{monthOtherVisits.length} টি ভিজিট</p>
+                  <p className="text-[9px] text-muted-foreground">{monthOtherVisits.length} visits</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="pb-1 pt-3 px-3">
                   <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Building2 className="w-3 h-3" /> অনারিয়াম
+                    <Building2 className="w-3 h-3" /> Honorarium
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
                   <p className="text-lg font-bold text-foreground">৳{totalHonorarium.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{monthHonorariums.length} টি কোম্পানি</p>
+                  <p className="text-[9px] text-muted-foreground">{monthHonorariums.length} companies</p>
                 </CardContent>
               </Card>
               <Card className="border-primary/30 bg-primary/5">
                 <CardHeader className="pb-1 pt-3 px-3">
                   <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <DollarSign className="w-3 h-3" /> মোট আয়
+                    <DollarSign className="w-3 h-3" /> Total Income
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-3 pb-3">
@@ -293,7 +293,7 @@ const Dashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" /> অন-কল / অন্যান্য ভিজিট
+                    <Phone className="w-4 h-4 text-primary" /> On-call / Other Visits
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -308,19 +308,19 @@ const Dashboard = () => {
                       <Input
                         value={newVisitDesc}
                         onChange={(e) => setNewVisitDesc(e.target.value)}
-                        placeholder="বিবরণ (ঐচ্ছিক)"
+                        placeholder="Description (optional)"
                         className="h-9 text-sm"
                       />
                       <Input
                         value={newVisitAmount}
                         onChange={(e) => setNewVisitAmount(e.target.value)}
-                        placeholder="টাকা"
+                        placeholder="Amount"
                         type="number"
                         className="h-9 text-sm"
                       />
                     </div>
                     <Button size="sm" className="h-9 gap-1 shrink-0" onClick={addOtherVisit}>
-                      <Plus className="w-3.5 h-3.5" /> যোগ
+                      <Plus className="w-3.5 h-3.5" /> Add
                     </Button>
                   </div>
                   <div className="space-y-1 max-h-[200px] overflow-y-auto">
@@ -338,7 +338,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     )) : (
-                      <p className="text-xs text-muted-foreground text-center py-3">এই মাসে কোনো অন-কল ভিজিট নেই</p>
+                      <p className="text-xs text-muted-foreground text-center py-3">No on-call visits this month</p>
                     )}
                   </div>
                 </CardContent>
@@ -348,7 +348,7 @@ const Dashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-primary" /> কোম্পানি অনারিয়াম
+                    <Building2 className="w-4 h-4 text-primary" /> Company Honorarium
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -356,18 +356,18 @@ const Dashboard = () => {
                     <Input
                       value={newCompany}
                       onChange={(e) => setNewCompany(e.target.value)}
-                      placeholder="কোম্পানির নাম"
+                      placeholder="Company name"
                       className="h-9 text-sm flex-1"
                     />
                     <Input
                       value={newHonAmount}
                       onChange={(e) => setNewHonAmount(e.target.value)}
-                      placeholder="টাকা"
+                      placeholder="Amount"
                       type="number"
                       className="h-9 text-sm w-28"
                     />
                     <Button size="sm" className="h-9 gap-1 shrink-0" onClick={addHonorarium}>
-                      <Plus className="w-3.5 h-3.5" /> যোগ
+                      <Plus className="w-3.5 h-3.5" /> Add
                     </Button>
                   </div>
                   <div className="space-y-1 max-h-[200px] overflow-y-auto">
@@ -382,7 +382,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     )) : (
-                      <p className="text-xs text-muted-foreground text-center py-3">এই মাসে কোনো অনারিয়াম নেই</p>
+                      <p className="text-xs text-muted-foreground text-center py-3">No honorarium this month</p>
                     )}
                   </div>
                 </CardContent>
@@ -393,7 +393,7 @@ const Dashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-primary" /> মাসিক ভিজিট আয় (১২ মাস)
+                  <DollarSign className="w-4 h-4 text-primary" /> Monthly Visit Income (12 Months)
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -402,7 +402,7 @@ const Dashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 10 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "ভিজিট আয়"]} />
+                    <Tooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "Visit Income"]} />
                     <Bar dataKey="visitIncome" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
