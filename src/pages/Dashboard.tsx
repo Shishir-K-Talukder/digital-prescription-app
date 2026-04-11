@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +11,7 @@ import FloatingNav from "@/components/FloatingNav";
 import PrintSetup from "@/components/PrintSetup";
 import MedicineSettingsPage from "@/components/MedicineSettingsPage";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Users, FileText, CalendarDays, SlidersHorizontal, Settings, Stethoscope, Home, DollarSign, Plus, Trash2, Building2, Phone } from "lucide-react";
+import { Users, FileText, CalendarDays, SlidersHorizontal, Settings, Stethoscope, Home, DollarSign, Plus, Trash2, Building2, Phone, TrendingUp } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { AdviceData } from "@/components/AdviceSection";
 
@@ -154,17 +153,17 @@ const Dashboard = () => {
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-5 bg-card border border-border shadow-sm h-10">
-            <TabsTrigger value="overview" className="gap-1.5 text-xs">
+          <TabsList className="mb-5 w-full grid grid-cols-4 h-11 bg-muted/60 p-1 rounded-xl border border-border shadow-sm">
+            <TabsTrigger value="overview" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <Home className="w-3.5 h-3.5" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="income" className="gap-1.5 text-xs">
+            <TabsTrigger value="income" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <DollarSign className="w-3.5 h-3.5" /> Income
             </TabsTrigger>
-            <TabsTrigger value="print-setup" className="gap-1.5 text-xs">
+            <TabsTrigger value="print-setup" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <SlidersHorizontal className="w-3.5 h-3.5" /> Print Setup
             </TabsTrigger>
-            <TabsTrigger value="rx-settings" className="gap-1.5 text-xs">
+            <TabsTrigger value="rx-settings" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <Settings className="w-3.5 h-3.5" /> Rx Settings
             </TabsTrigger>
           </TabsList>
@@ -172,67 +171,66 @@ const Dashboard = () => {
           {/* OVERVIEW TAB */}
           <TabsContent value="overview" className="mt-0 space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" /> Total Prescriptions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+              {/* Total Prescriptions */}
+              <div className="section-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="field-label mb-0">Total Prescriptions</p>
                   <p className="text-2xl font-bold text-foreground">{prescriptions.length}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" /> Unique Patients
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+              </div>
+              {/* Unique Patients */}
+              <div className="section-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center shrink-0">
+                  <Users className="w-6 h-6 text-accent-foreground" />
+                </div>
+                <div>
+                  <p className="field-label mb-0">Unique Patients</p>
                   <p className="text-2xl font-bold text-foreground">{uniquePatients}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                    <CalendarDays className="w-3.5 h-3.5" /> This Month
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                </div>
+              </div>
+              {/* This Month */}
+              <div className="section-card p-5 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <CalendarDays className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="field-label mb-0">This Month</p>
                   <p className="text-2xl font-bold text-foreground">{thisMonthCount}</p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" /> Patients Seen Per Month (12 Months)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {rxLoading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : (
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={monthlyData}>
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                      <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 10 }} />
-                      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Bar dataKey="patients" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
+            <div className="section-card p-5">
+              <h3 className="section-header mb-4">
+                <div className="section-header-icon flex items-center justify-center">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                </div>
+                Patients Seen Per Month (12 Months)
+              </h3>
+              {rxLoading ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 10 }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                    <Tooltip />
+                    <Bar dataKey="patients" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </TabsContent>
 
           {/* INCOME TAB */}
           <TabsContent value="income" className="mt-0 space-y-5">
             {/* Month selector */}
-            <div className="flex items-center gap-3">
-              <Label className="text-sm font-medium">Select Month:</Label>
+            <div className="section-card p-4 flex items-center gap-3">
+              <Label className="text-sm font-medium whitespace-nowrap">Select Month:</Label>
               <Input
                 type="month"
                 value={selectedMonth}
@@ -243,60 +241,57 @@ const Dashboard = () => {
 
             {/* Income summary cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card>
-                <CardHeader className="pb-1 pt-3 px-3">
-                  <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Stethoscope className="w-3 h-3" /> Visit Fee
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <p className="text-lg font-bold text-foreground">৳{visitIncome.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{currentMonthData?.patients || 0} patients</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-1 pt-3 px-3">
-                  <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Phone className="w-3 h-3" /> On-call/Other
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <p className="text-lg font-bold text-foreground">৳{totalOtherVisit.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{monthOtherVisits.length} visits</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-1 pt-3 px-3">
-                  <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <Building2 className="w-3 h-3" /> Honorarium
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <p className="text-lg font-bold text-foreground">৳{totalHonorarium.toLocaleString()}</p>
-                  <p className="text-[9px] text-muted-foreground">{monthHonorariums.length} companies</p>
-                </CardContent>
-              </Card>
-              <Card className="border-primary/30 bg-primary/5">
-                <CardHeader className="pb-1 pt-3 px-3">
-                  <CardTitle className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                    <DollarSign className="w-3 h-3" /> Total Income
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
-                  <p className="text-lg font-bold text-primary">৳{totalIncome.toLocaleString()}</p>
-                </CardContent>
-              </Card>
+              <div className="section-card p-4 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Stethoscope className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Visit Fee</span>
+                </div>
+                <p className="text-lg font-bold text-foreground mt-1">৳{visitIncome.toLocaleString()}</p>
+                <p className="text-[9px] text-muted-foreground">{currentMonthData?.patients || 0} patients</p>
+              </div>
+              <div className="section-card p-4 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
+                    <Phone className="w-3.5 h-3.5 text-accent-foreground" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">On-call/Other</span>
+                </div>
+                <p className="text-lg font-bold text-foreground mt-1">৳{totalOtherVisit.toLocaleString()}</p>
+                <p className="text-[9px] text-muted-foreground">{monthOtherVisits.length} visits</p>
+              </div>
+              <div className="section-card p-4 flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Building2 className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Honorarium</span>
+                </div>
+                <p className="text-lg font-bold text-foreground mt-1">৳{totalHonorarium.toLocaleString()}</p>
+                <p className="text-[9px] text-muted-foreground">{monthHonorariums.length} companies</p>
+              </div>
+              <div className="section-card p-4 flex flex-col gap-1 border-primary/30 bg-primary/5">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <DollarSign className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-[10px] font-medium text-primary uppercase tracking-wider">Total Income</span>
+                </div>
+                <p className="text-lg font-bold text-primary mt-1">৳{totalIncome.toLocaleString()}</p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Other visit / on-call section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" /> On-call / Other Visits
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div className="section-card p-5">
+                <h3 className="section-header mb-4">
+                  <div className="section-header-icon flex items-center justify-center">
+                    <Phone className="w-3.5 h-3.5" />
+                  </div>
+                  On-call / Other Visits
+                </h3>
+                <div className="space-y-3">
                   <div className="grid grid-cols-[1fr_auto] gap-2">
                     <div className="grid grid-cols-3 gap-2">
                       <Input
@@ -341,17 +336,18 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground text-center py-3">No on-call visits this month</p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
 
               {/* Company honorarium section */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-primary" /> Company Honorarium
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <div className="section-card p-5">
+                <h3 className="section-header mb-4">
+                  <div className="section-header-icon flex items-center justify-center">
+                    <Building2 className="w-3.5 h-3.5" />
+                  </div>
+                  Company Honorarium
+                </h3>
+                <div className="space-y-3">
                   <div className="flex gap-2">
                     <Input
                       value={newCompany}
@@ -385,29 +381,28 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground text-center py-3">No honorarium this month</p>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
-            {/* Monthly income chart - 12 months */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-primary" /> Monthly Visit Income (12 Months)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 10 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "Visit Income"]} />
-                    <Bar dataKey="visitIncome" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            {/* Monthly income chart */}
+            <div className="section-card p-5">
+              <h3 className="section-header mb-4">
+                <div className="section-header-icon flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5" />
+                </div>
+                Monthly Visit Income (12 Months)
+              </h3>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "Visit Income"]} />
+                  <Bar dataKey="visitIncome" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </TabsContent>
 
           <TabsContent value="print-setup" className="mt-0">

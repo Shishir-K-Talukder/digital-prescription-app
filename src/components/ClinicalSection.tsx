@@ -279,8 +279,34 @@ const ClinicalSection = ({ data, onChange }: Props) => {
             value={data.chiefComplaint}
             onChange={(e) => onChange({ ...data, chiefComplaint: e.target.value })}
             placeholder="জ্বর, কাশি ৩ দিন যাবৎ..."
-            className="text-sm min-h-[140px] resize-none"
+            className="text-sm min-h-[100px] resize-none"
           />
+          {/* Quick suggestion chips */}
+          <div className="mt-2">
+            <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">Quick Add:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                "Fever", "Cough", "Cold", "Headache", "Body ache",
+                "Sore throat", "Vomiting", "Diarrhoea", "Abdominal pain",
+                "Chest pain", "Breathlessness", "Weakness", "Dizziness",
+                "Burning micturition", "Skin rash", "Joint pain",
+                "Back pain", "Loss of appetite", "Weight loss",
+              ].map((cc) => (
+                <button
+                  key={cc}
+                  type="button"
+                  onClick={() => {
+                    const current = data.chiefComplaint.trim();
+                    const separator = current ? ", " : "";
+                    onChange({ ...data, chiefComplaint: current + separator + cc });
+                  }}
+                  className="px-2 py-0.5 text-[11px] font-medium rounded-full border border-border bg-muted/40 text-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-colors cursor-pointer"
+                >
+                  + {cc}
+                </button>
+              ))}
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="oe" className="mt-0">
