@@ -117,19 +117,21 @@ const Index = () => {
             {/* Patient Info - Full Width */}
             <PatientInfo patient={patient} onChange={setPatient} />
 
-            {/* Two Column Layout: Rx Left, Clinical Right */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
-              {/* Left Column - Prescription */}
-              <div className="space-y-5 min-w-0">
-                <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={setMedicineOptions} />
-                <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
-              </div>
-
-              {/* Right Column - Clinical Notes */}
+            {/* Two Column Layout: Clinical Left, Rx Right */}
+            <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
+              {/* Left Column - Clinical Notes */}
               <div className="min-w-0">
                 <ClinicalSection data={clinical} onChange={setClinical} />
               </div>
+
+              {/* Right Column - Prescription */}
+              <div className="space-y-5 min-w-0">
+                <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={setMedicineOptions} />
+              </div>
             </div>
+
+            {/* Advice & Follow-up - Full Width */}
+            <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
           </TabsContent>
 
           <TabsContent value="preview" className="mt-0">
