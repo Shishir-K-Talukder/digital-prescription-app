@@ -27,11 +27,11 @@ const FloatingNav = ({ actions }: { actions?: NavAction[] }) => {
   ];
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
-      <nav className="flex items-center gap-1 bg-card/80 backdrop-blur-xl border border-border/50 rounded-full px-2 py-1.5 shadow-lg shadow-black/5">
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50">
+      <nav className="flex items-center gap-1.5 bg-card/90 backdrop-blur-2xl border border-border/40 rounded-2xl px-3 py-2 shadow-xl shadow-black/[0.08]">
         {/* Logo */}
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-1">
-          <span className="text-sm font-serif italic text-primary-foreground">℞</span>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mr-1 shadow-sm">
+          <span className="text-sm font-serif italic text-primary-foreground font-bold">℞</span>
         </div>
 
         {/* Nav items */}
