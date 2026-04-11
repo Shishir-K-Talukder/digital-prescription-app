@@ -146,14 +146,7 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
                 <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
                 <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
               </div>
-              <div className="flex-1 grid grid-cols-2 md:grid-cols-6 gap-2">
-                <div>
-                  <Label className="text-[11px] text-muted-foreground">Type</Label>
-                  <Select value={med.type} onValueChange={(v) => updateMedicine(med.id, "type", v)}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{options.types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
+              <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2">
                 <div className="col-span-2">
                   <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
                   <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(selected) => updateMedicine(med.id, "type", selected.detectedType)} />
