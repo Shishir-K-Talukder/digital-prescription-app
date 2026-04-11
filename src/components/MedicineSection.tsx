@@ -24,7 +24,7 @@ interface Props {
   onOptionsChange: (o: MedicineOptions) => void;
 }
 
-const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onChange: (v: string) => void; onSelect: (med: { name: string; strength: string; detectedType: string }) => void }) => {
+const MedicineNameInput = ({ value, type, onChange, onSelect }: { value: string; type: string; onChange: (v: string) => void; onSelect: (med: { name: string; strength: string; detectedType: string }) => void }) => {
   const [query, setQuery] = useState(value);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const { suggestions, loading } = useMedicineSearch(query);
