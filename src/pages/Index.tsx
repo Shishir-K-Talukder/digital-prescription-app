@@ -10,6 +10,7 @@ import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview from "@/components/PrintPreview";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
+import PatientDocuments from "@/components/PatientDocuments";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useDoctorSettings } from "@/hooks/useDoctorSettings";
@@ -121,6 +122,11 @@ const Index = () => {
               </div>
             </div>
             <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
+            <div className="section-card p-4">
+              <PatientDocuments patientId={prescriptions.find(
+                (rx) => rx.patient_data.name === patient.name && rx.patient_data.mobile === patient.mobile
+              )?.id} />
+            </div>
           </TabsContent>
 
           <TabsContent value="preview" className="mt-0">
