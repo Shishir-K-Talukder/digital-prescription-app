@@ -77,6 +77,42 @@ const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onCha
   );
 };
 
+const DoseInput = ({ value, options, onChange }: { value: string; options: string[]; onChange: (v: string) => void }) => {
+  const [isCustom, setIsCustom] = useState(!options.includes(value) && value !== "");
+
+  if (isCustom) {
+    return (
+      <div className="flex gap-1">
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Custom dose..."
+          className="h-8 text-xs flex-1"
+          autoFocus
+        />
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => { setIsCustom(false); onChange(options[0] || ""); }}>
+          <SelectValue />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <Select value={options.includes(value) ? value : "__custom__"} onValueChange={(v) => {
+      if (v === "__custom__") { setIsCustom(true); onChange(""); }
+      else onChange(v);
+    }}>
+      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        {options.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+        <SelectItem value="__custom__" className="text-xs font-medium border-t border-border mt-1 pt-1">
+          <span className="flex items-center gap-1"><Pencil className="w-3 h-3" /> Custom Dose</span>
+        </SelectItem>
+      </SelectContent>
+    </Select>
+  );
+};
+
 const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Props) => {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
