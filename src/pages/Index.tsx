@@ -132,7 +132,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="setup">
-            <PrintSetup settings={printSettings} onChange={setPrintSettings} />
+            <PrintSetup settings={printSettings} onChange={handlePrintSettingsChange} />
           </TabsContent>
         </Tabs>
       </main>
