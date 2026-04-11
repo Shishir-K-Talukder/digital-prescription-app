@@ -8,6 +8,7 @@ import { MedicineOptions } from "./MedicineSettings";
 export interface AdviceData {
   advice: string;
   followUpDate: string;
+  visitFee?: string;
 }
 
 interface Props {
@@ -76,6 +77,17 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
             placeholder="কাস্টম ফলো-আপ লিখুন বা উপর থেকে নির্বাচন করুন..."
             className="h-8 text-sm"
           />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-[11px] text-muted-foreground">Visit Fee / ভিজিট ফি (৳)</Label>
+          <Input
+            value={data.visitFee || ""}
+            onChange={(e) => onChange({ ...data, visitFee: e.target.value })}
+            placeholder="৫০০"
+            type="number"
+            className="h-8 text-sm"
+          />
+          <p className="text-[10px] text-muted-foreground">শুধু ড্যাশবোর্ডের হিসাবের জন্য, প্রিন্টে দেখাবে না</p>
         </div>
       </div>
     </div>
