@@ -12,7 +12,7 @@ export interface MedicineOptions {
   durations: string[];
   meals: string[];
   adviceList: string[];
-  followUpOptions: { label: string; days: number }[];
+  followUpOptions: string[];
 }
 
 const STORAGE_KEY = "medicine-options";
@@ -94,14 +94,9 @@ const DEFAULT_OPTIONS: MedicineOptions = {
     "পরবর্তী ভিজিটে রিপোর্ট নিয়ে আসুন",
   ],
   followUpOptions: [
-    { label: "3 দিন পর", days: 3 },
-    { label: "5 দিন পর", days: 5 },
-    { label: "7 দিন পর", days: 7 },
-    { label: "10 দিন পর", days: 10 },
-    { label: "15 দিন পর", days: 15 },
-    { label: "1 মাস পর", days: 30 },
-    { label: "2 মাস পর", days: 60 },
-    { label: "3 মাস পর", days: 90 },
+    "৩ দিন পর", "৫ দিন পর", "৭ দিন পর", "১০ দিন পর",
+    "১৫ দিন পর", "১ মাস পর", "২ মাস পর", "৩ মাস পর",
+    "রিপোর্ট নিয়ে আসবেন", "প্রয়োজনে আসবেন",
   ],
 };
 
@@ -110,7 +105,14 @@ export const loadMedicineOptions = (): MedicineOptions => {
     const version = localStorage.getItem(STORAGE_KEY + "-version");
     if (version === SETTINGS_VERSION) {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) return { ...DEFAULT_OPTIONS, ...JSON.parse(stored) };
+      if (stored) {
+        const parsed = { ...DEFAULT_OPTIONS, ...JSON.parse(stored) };
+        // Migrate old {label, days} follow-up format to string[]
+        if (parsed.followUpOptions?.length && typeof parsed.followUpOptions[0] === "object") {
+          parsed.followUpOptions = parsed.followUpOptions.map((o: any) => typeof o === "string" ? o : o.label);
+        }
+        return parsed;
+      }
     } else {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.setItem(STORAGE_KEY + "-version", SETTINGS_VERSION);
@@ -278,11 +280,6 @@ const MedicineSettings = ({ options, onChange }: Props) => {
     saveMedicineOptions(updated);
   };
 
-  const handleFollowUpChange = (items: { label: string; days: number }[]) => {
-    const updated = { ...options, followUpOptions: items };
-    onChange(updated);
-    saveMedicineOptions(updated);
-  };
 
   const tabs = [
     { value: "types", label: "Types", icon: Pill, description: "Medicine types (Tab, Cap, Syr...)", content: <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" /> },
@@ -290,7 +287,7 @@ const MedicineSettings = ({ options, onChange }: Props) => {
     { value: "durations", label: "Duration", icon: Clock, description: "Duration options", content: <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" /> },
     { value: "meals", label: "Meal", icon: Utensils, description: "Meal timing options", content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
     { value: "advice", label: "Advice", icon: MessageSquare, description: "Advice options (পরামর্শ)", content: <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" /> },
-    { value: "followup", label: "Follow-up", icon: CalendarDays, description: "Follow-up duration options", content: <FollowUpEditor items={options.followUpOptions} onChange={handleFollowUpChange} /> },
+    { value: "followup", label: "Follow-up", icon: CalendarDays, description: "Follow-up options (ফলো-আপ)", content: <ListEditor items={options.followUpOptions} onChange={(v) => handleChange("followUpOptions", v)} placeholder="e.g. ৭ দিন পর" /> },
   ];
 
   return (
