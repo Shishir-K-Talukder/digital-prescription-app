@@ -62,7 +62,8 @@ const AdviceSection = ({ data, onChange }: Props) => {
       return;
     }
     const days = parseInt(value);
-    onChange({ ...data, followUpDate: getFollowUpDate(days) });
+    const option = FOLLOW_UP_OPTIONS.find(o => o.days === days);
+    onChange({ ...data, followUpDate: option ? `${option.days} days` : `${days} days` });
   };
 
   return (
