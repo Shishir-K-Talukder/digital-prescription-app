@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Printer, FileText, Stethoscope, Eye, Save, History, LogOut, LayoutDashboard, User } from "lucide-react";
 import FloatingNav from "@/components/FloatingNav";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
-import PatientInfo, { PatientData } from "@/components/PatientInfo";
+import PatientInfo, { PatientData, savePatientToHistory } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
@@ -64,6 +64,7 @@ const Index = () => {
   };
 
   const handleSave = () => {
+    savePatientToHistory(patient);
     savePrescription(patient, clinical, medicines, advice);
   };
 
