@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Settings, Pencil, Check, X } from "lucide-react";
+import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers } from "lucide-react";
 
 export interface MedicineOptions {
   types: string[];
@@ -75,9 +75,7 @@ const ListEditor = ({ items, onChange, placeholder }: ListEditorProps) => {
     }
   };
 
-  const removeItem = (idx: number) => {
-    onChange(items.filter((_, i) => i !== idx));
-  };
+  const removeItem = (idx: number) => onChange(items.filter((_, i) => i !== idx));
 
   const startEdit = (idx: number) => {
     setEditIdx(idx);
@@ -97,38 +95,39 @@ const ListEditor = ({ items, onChange, placeholder }: ListEditorProps) => {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex gap-2">
         <Input
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
           placeholder={placeholder}
-          className="h-8 text-xs"
+          className="h-9 text-sm"
           onKeyDown={(e) => e.key === "Enter" && addItem()}
         />
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={addItem}>
-          <Plus className="w-3 h-3" /> Add
+        <Button size="sm" variant="default" className="h-9 text-sm gap-1.5 px-4 shrink-0" onClick={addItem}>
+          <Plus className="w-3.5 h-3.5" /> Add
         </Button>
       </div>
-      <div className="space-y-1 max-h-[200px] overflow-y-auto">
+      <div className="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-1 bg-muted/50 rounded px-2 py-1 text-xs group">
+          <div key={idx} className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 text-sm group border border-transparent hover:border-border transition-colors">
             {editIdx === idx ? (
               <>
-                <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-6 text-xs flex-1" onKeyDown={(e) => e.key === "Enter" && saveEdit()} />
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={saveEdit}><Check className="w-3 h-3 text-green-600" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditIdx(null)}><X className="w-3 h-3" /></Button>
+                <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-8 text-sm flex-1" onKeyDown={(e) => e.key === "Enter" && saveEdit()} autoFocus />
+                <Button size="icon" variant="outline" className="h-8 w-8 shrink-0" onClick={saveEdit}><Check className="w-4 h-4 text-primary" /></Button>
+                <Button size="icon" variant="outline" className="h-8 w-8 shrink-0" onClick={() => setEditIdx(null)}><X className="w-4 h-4" /></Button>
               </>
             ) : (
               <>
-                <span className="flex-1">{item}</span>
-                <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => startEdit(idx)}><Pencil className="w-3 h-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => removeItem(idx)}><Trash2 className="w-3 h-3" /></Button>
+                <span className="flex-1 text-foreground">{item}</span>
+                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => startEdit(idx)}><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></Button>
+                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive" onClick={() => removeItem(idx)}><Trash2 className="w-3.5 h-3.5" /></Button>
               </>
             )}
           </div>
         ))}
       </div>
+      <p className="text-xs text-muted-foreground">{items.length} items • Hover to edit or delete</p>
     </div>
   );
 };
@@ -168,32 +167,34 @@ const FollowUpEditor = ({ items, onChange }: { items: { label: string; days: num
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="flex gap-2">
-        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Label (e.g. ৭ দিন পর)" className="h-8 text-xs flex-1" />
-        <Input value={newDays} onChange={(e) => setNewDays(e.target.value)} placeholder="Days" type="number" className="h-8 text-xs w-20" />
-        <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={addItem}><Plus className="w-3 h-3" /> Add</Button>
+        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="Label (e.g. ৭ দিন পর)" className="h-9 text-sm flex-1" />
+        <Input value={newDays} onChange={(e) => setNewDays(e.target.value)} placeholder="Days" type="number" className="h-9 text-sm w-20" />
+        <Button size="sm" variant="default" className="h-9 text-sm gap-1.5 px-4 shrink-0" onClick={addItem}><Plus className="w-3.5 h-3.5" /> Add</Button>
       </div>
-      <div className="space-y-1 max-h-[200px] overflow-y-auto">
+      <div className="space-y-1.5 max-h-[240px] overflow-y-auto pr-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-1 bg-muted/50 rounded px-2 py-1 text-xs group">
+          <div key={idx} className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 text-sm group border border-transparent hover:border-border transition-colors">
             {editIdx === idx ? (
               <>
-                <Input value={editLabel} onChange={(e) => setEditLabel(e.target.value)} className="h-6 text-xs flex-1" />
-                <Input value={editDays} onChange={(e) => setEditDays(e.target.value)} type="number" className="h-6 text-xs w-16" />
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={saveEdit}><Check className="w-3 h-3 text-green-600" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditIdx(null)}><X className="w-3 h-3" /></Button>
+                <Input value={editLabel} onChange={(e) => setEditLabel(e.target.value)} className="h-8 text-sm flex-1" autoFocus />
+                <Input value={editDays} onChange={(e) => setEditDays(e.target.value)} type="number" className="h-8 text-sm w-16" />
+                <Button size="icon" variant="outline" className="h-8 w-8 shrink-0" onClick={saveEdit}><Check className="w-4 h-4 text-primary" /></Button>
+                <Button size="icon" variant="outline" className="h-8 w-8 shrink-0" onClick={() => setEditIdx(null)}><X className="w-4 h-4" /></Button>
               </>
             ) : (
               <>
-                <span className="flex-1">{item.label} ({item.days}d)</span>
-                <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => startEdit(idx)}><Pencil className="w-3 h-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => onChange(items.filter((_, i) => i !== idx))}><Trash2 className="w-3 h-3" /></Button>
+                <span className="flex-1 text-foreground">{item.label}</span>
+                <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{item.days}d</span>
+                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => startEdit(idx)}><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></Button>
+                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive" onClick={() => onChange(items.filter((_, i) => i !== idx))}><Trash2 className="w-3.5 h-3.5" /></Button>
               </>
             )}
           </div>
         ))}
       </div>
+      <p className="text-xs text-muted-foreground">{items.length} items • Hover to edit or delete</p>
     </div>
   );
 };
@@ -216,50 +217,49 @@ const MedicineSettings = ({ options, onChange }: Props) => {
     saveMedicineOptions(updated);
   };
 
+  const tabs = [
+    { value: "types", label: "Types", icon: Pill, description: "Medicine types (Tab, Cap, Syr...)", content: <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" /> },
+    { value: "doses", label: "Doses", icon: Layers, description: "Dose patterns", content: <ListEditor items={options.doses} onChange={(v) => handleChange("doses", v)} placeholder="e.g. 2+0+2" /> },
+    { value: "durations", label: "Duration", icon: Clock, description: "Duration options", content: <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" /> },
+    { value: "meals", label: "Meal", icon: Utensils, description: "Meal timing options", content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
+    { value: "advice", label: "Advice", icon: MessageSquare, description: "Advice options (পরামর্শ)", content: <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" /> },
+    { value: "followup", label: "Follow-up", icon: CalendarDays, description: "Follow-up duration options", content: <FollowUpEditor items={options.followUpOptions} onChange={handleFollowUpChange} /> },
+  ];
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-          <Settings className="w-3 h-3" /> Settings
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+          <Settings className="w-3.5 h-3.5" /> Settings
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-sm">Medicine Options Settings</DialogTitle>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <Settings className="w-4 h-4 text-primary" />
+            Prescription Settings
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground">
+            Customize medicine options, advice, and follow-up. Changes are saved automatically.
+          </DialogDescription>
         </DialogHeader>
-        <Tabs defaultValue="types">
-          <TabsList className="w-full flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="types" className="text-xs">Types</TabsTrigger>
-            <TabsTrigger value="doses" className="text-xs">Doses</TabsTrigger>
-            <TabsTrigger value="durations" className="text-xs">Duration</TabsTrigger>
-            <TabsTrigger value="meals" className="text-xs">Meal</TabsTrigger>
-            <TabsTrigger value="advice" className="text-xs">Advice</TabsTrigger>
-            <TabsTrigger value="followup" className="text-xs">Follow-up</TabsTrigger>
+        <Tabs defaultValue="types" className="flex-1 overflow-hidden flex flex-col">
+          <TabsList className="w-full flex-wrap h-auto gap-1 p-1.5 bg-muted/50">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.value} value={tab.value} className="text-xs gap-1.5 data-[state=active]:shadow-sm">
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
-          <TabsContent value="types">
-            <Label className="text-xs text-muted-foreground mb-2 block">Medicine types (Tab, Cap, Syr...)</Label>
-            <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" />
-          </TabsContent>
-          <TabsContent value="doses">
-            <Label className="text-xs text-muted-foreground mb-2 block">Dose patterns</Label>
-            <ListEditor items={options.doses} onChange={(v) => handleChange("doses", v)} placeholder="e.g. 2+0+2" />
-          </TabsContent>
-          <TabsContent value="durations">
-            <Label className="text-xs text-muted-foreground mb-2 block">Duration options</Label>
-            <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" />
-          </TabsContent>
-          <TabsContent value="meals">
-            <Label className="text-xs text-muted-foreground mb-2 block">Meal timing options</Label>
-            <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" />
-          </TabsContent>
-          <TabsContent value="advice">
-            <Label className="text-xs text-muted-foreground mb-2 block">Advice options (পরামর্শ)</Label>
-            <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" />
-          </TabsContent>
-          <TabsContent value="followup">
-            <Label className="text-xs text-muted-foreground mb-2 block">Follow-up options (label — days)</Label>
-            <FollowUpEditor items={options.followUpOptions} onChange={(v) => handleFollowUpChange(v)} />
-          </TabsContent>
+          <div className="flex-1 overflow-y-auto mt-3">
+            {tabs.map((tab) => (
+              <TabsContent key={tab.value} value={tab.value} className="mt-0">
+                <Label className="text-sm text-muted-foreground mb-3 block">{tab.description}</Label>
+                {tab.content}
+              </TabsContent>
+            ))}
+          </div>
         </Tabs>
       </DialogContent>
     </Dialog>
