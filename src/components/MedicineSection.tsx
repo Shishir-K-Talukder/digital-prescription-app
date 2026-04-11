@@ -23,11 +23,10 @@ interface Props {
   onOptionsChange: (o: MedicineOptions) => void;
 }
 
-const MedicineSection = ({ medicines, onChange }: Props) => {
+const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Props) => {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragRef = useRef<number | null>(null);
-  const [options, setOptions] = useState<MedicineOptions>(loadMedicineOptions);
 
   const addMedicine = () => {
     onChange([
