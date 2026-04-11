@@ -76,7 +76,8 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <Label className="text-[11px] text-muted-foreground font-semibold mb-3 block">Show / Hide Sections on Print</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {[
-            { key: "showDoctorInfo", label: "Doctor Info", id: "show-doctor" },
+            { key: "showDoctorInfo", label: "Header Area", id: "show-doctor" },
+            { key: "showDoctorText", label: "Doctor Info Text", id: "show-doctor-text" },
             { key: "showCC", label: "C/C", id: "show-cc" },
             { key: "showOE", label: "O/E", id: "show-oe" },
             { key: "showDiagnosis", label: "D/X", id: "show-dx" },

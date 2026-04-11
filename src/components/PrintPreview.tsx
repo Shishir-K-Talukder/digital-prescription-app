@@ -11,6 +11,7 @@ export interface PrintSettings {
   headerSize: "small" | "medium" | "large" | "custom";
   customHeaderHeight?: string;
   showDoctorInfo: boolean;
+  showDoctorText: boolean;
   showCC: boolean;
   showOE: boolean;
   showDiagnosis: boolean;
@@ -24,6 +25,7 @@ export const defaultPrintSettings: PrintSettings = {
   headerSize: "medium",
   customHeaderHeight: "80",
   showDoctorInfo: true,
+  showDoctorText: true,
   showCC: true,
   showOE: true,
   showDiagnosis: true,
@@ -80,7 +82,7 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
     <div className="print-preview bg-white text-black p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
       {settings.showDoctorInfo && (
         <div className="text-center border-b-2 border-black pb-3 mb-4" style={{ minHeight: headerHeight }}>
-          {doctorHasInfo ? (
+          {settings.showDoctorText && doctorHasInfo ? (
             <>
               <h1 className={`font-bold ${headerTextClass[settings.headerSize]}`}>{doctor.name}</h1>
               {doctor.degrees && <p className="text-xs text-gray-600">{doctor.degrees}</p>}
