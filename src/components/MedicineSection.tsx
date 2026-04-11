@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 import MedicineSettings, { MedicineOptions } from "./MedicineSettings";
+import { useMedicineSearch } from "@/hooks/useMedicineSearch";
 
 export interface Medicine {
   id: string;
@@ -22,6 +23,56 @@ interface Props {
   options: MedicineOptions;
   onOptionsChange: (o: MedicineOptions) => void;
 }
+
+const MedicineNameInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [query, setQuery] = useState(value);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const { suggestions, loading } = useMedicineSearch(query);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const handleSelect = (med: { name: string; strength: string }) => {
+    const fullName = med.strength ? `${med.name} ${med.strength}` : med.name;
+    setQuery(fullName);
+    onChange(fullName);
+    setShowSuggestions(false);
+  };
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <Input
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setShowSuggestions(true); }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        placeholder="Type medicine name..."
+        className="h-8 text-xs"
+      />
+      {showSuggestions && (query.length >= 2) && (
+        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
+          {loading && (
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+              <Loader2 className="w-3 h-3 animate-spin" /> Searching medex.com.bd...
+            </div>
+          )}
+          {!loading && suggestions.length === 0 && query.length >= 2 && (
+            <div className="px-3 py-2 text-xs text-muted-foreground">No results found</div>
+          )}
+          {suggestions.map((med, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className="w-full text-left px-3 py-1.5 hover:bg-accent/50 transition-colors border-b border-border/30 last:border-0"
+              onMouseDown={(e) => { e.preventDefault(); handleSelect(med); }}
+            >
+              <div className="text-xs font-medium text-foreground">{med.name} {med.strength}</div>
+              <div className="text-[10px] text-muted-foreground">{med.generic} • {med.company}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Props) => {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -104,7 +155,7 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
                 </div>
                 <div className="col-span-2">
                   <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
-                  <Input value={med.name} onChange={(e) => updateMedicine(med.id, "name", e.target.value)} placeholder="Napa 500mg" className="h-8 text-xs" />
+                  <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} />
                 </div>
                 <div>
                   <Label className="text-[11px] text-muted-foreground">Dose</Label>
