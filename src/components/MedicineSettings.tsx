@@ -12,7 +12,7 @@ export interface MedicineOptions {
   durations: string[];
   meals: string[];
   adviceList: string[];
-  followUpOptions: { label: string; days: number }[];
+  followUpOptions: string[];
 }
 
 const STORAGE_KEY = "medicine-options";
@@ -94,14 +94,9 @@ const DEFAULT_OPTIONS: MedicineOptions = {
     "পরবর্তী ভিজিটে রিপোর্ট নিয়ে আসুন",
   ],
   followUpOptions: [
-    { label: "3 দিন পর", days: 3 },
-    { label: "5 দিন পর", days: 5 },
-    { label: "7 দিন পর", days: 7 },
-    { label: "10 দিন পর", days: 10 },
-    { label: "15 দিন পর", days: 15 },
-    { label: "1 মাস পর", days: 30 },
-    { label: "2 মাস পর", days: 60 },
-    { label: "3 মাস পর", days: 90 },
+    "৩ দিন পর", "৫ দিন পর", "৭ দিন পর", "১০ দিন পর",
+    "১৫ দিন পর", "১ মাস পর", "২ মাস পর", "৩ মাস পর",
+    "রিপোর্ট নিয়ে আসবেন", "প্রয়োজনে আসবেন",
   ],
 };
 

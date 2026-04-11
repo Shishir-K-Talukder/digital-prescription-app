@@ -30,9 +30,7 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
       onChange({ ...data, followUpDate: "" });
       return;
     }
-    const days = parseInt(value);
-    const option = options.followUpOptions.find(o => o.days === days);
-    onChange({ ...data, followUpDate: option ? `${option.days} days` : `${days} days` });
+    onChange({ ...data, followUpDate: value });
   };
 
   return (
@@ -66,9 +64,9 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select follow-up..." /></SelectTrigger>
             <SelectContent>
               {options.followUpOptions.map((opt) => (
-                <SelectItem key={opt.days} value={String(opt.days)} className="text-xs">{opt.label}</SelectItem>
+                <SelectItem key={opt} value={opt} className="text-xs">{opt}</SelectItem>
               ))}
-              <SelectItem value="__custom__" className="text-xs font-medium">📅 Custom Date</SelectItem>
+              <SelectItem value="__custom__" className="text-xs font-medium">✏️ Custom</SelectItem>
             </SelectContent>
           </Select>
           <Input
