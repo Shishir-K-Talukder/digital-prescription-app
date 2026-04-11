@@ -79,6 +79,20 @@ const PrintSetup = ({ settings, onChange }: Props) => {
       </div>
 
       <div className="mt-5 pt-4 border-t border-border">
+        <Label className="text-[11px] text-muted-foreground font-semibold mb-3 block">Patient Information Box Size</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Width (mm)</Label>
+            <Input value={settings.patientInfoWidth || ""} onChange={(e) => onChange({ ...settings, patientInfoWidth: e.target.value })} placeholder="Full width (default)" className="h-9 text-xs" type="number" />
+          </div>
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Height (mm)</Label>
+            <Input value={settings.patientInfoHeight || ""} onChange={(e) => onChange({ ...settings, patientInfoHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-border">
         <Label className="text-[11px] text-muted-foreground font-semibold mb-3 block">Show / Hide Sections on Print</Label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {[

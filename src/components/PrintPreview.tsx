@@ -11,6 +11,8 @@ export interface PrintSettings {
   headerSize: "small" | "medium" | "large" | "custom";
   customHeaderHeight?: string;
   customHeaderWidth?: string;
+  patientInfoWidth?: string;
+  patientInfoHeight?: string;
   showDoctorInfo: boolean;
   showDoctorText: boolean;
   showCC: boolean;
@@ -121,7 +123,13 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
         </div>
       )}
 
-      <div className="flex flex-wrap justify-between text-xs mb-4 pb-2 border-b border-gray-300">
+      <div
+        className="flex flex-wrap justify-between text-xs mb-4 pb-2 border-b border-gray-300"
+        style={{
+          ...(settings.patientInfoWidth ? { maxWidth: `${settings.patientInfoWidth}mm` } : {}),
+          ...(settings.patientInfoHeight ? { minHeight: `${settings.patientInfoHeight}mm` } : {}),
+        }}
+      >
         <span><strong>Name :: </strong>{patient.name}</span>
         <span><strong>Age :: </strong>{patient.age}</span>
         <span><strong>Sex :: </strong>{patient.sex}</span>
