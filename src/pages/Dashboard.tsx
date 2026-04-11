@@ -18,7 +18,7 @@ const Dashboard = () => {
   const { profile, loading: profileLoading } = useProfile();
   const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
   const { prescriptions, loading: rxLoading } = usePrescriptions();
-  const navigate = useNavigate();
+  
   const [activeTab, setActiveTab] = useState("overview");
 
   const monthlyData = useMemo(() => {
