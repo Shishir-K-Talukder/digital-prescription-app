@@ -34,14 +34,16 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
   };
 
   return (
-    <div className="section-card p-4">
-      <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-primary" />
+    <div className="section-card p-5">
+      <h3 className="section-header mb-4">
+        <div className="section-header-icon flex items-center justify-center">
+          <MessageSquare className="w-3.5 h-3.5" />
+        </div>
         Advice & Follow-up
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="md:col-span-2 space-y-2">
-          <Label className="text-[11px] text-muted-foreground">Quick Advice / দ্রুত পরামর্শ</Label>
+          <Label className="field-label">Quick Advice</Label>
           <Select onValueChange={handleAdviceSelect}>
             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select advice..." /></SelectTrigger>
             <SelectContent>
@@ -59,7 +61,7 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-[11px] text-muted-foreground">Follow-up / ফলো-আপ</Label>
+          <Label className="field-label">Follow-up</Label>
           <Select onValueChange={handleFollowUpSelect}>
             <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select follow-up..." /></SelectTrigger>
             <SelectContent>
@@ -77,7 +79,7 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-[11px] text-muted-foreground">Visit Fee / ভিজিট ফি (৳)</Label>
+          <Label className="field-label">Visit Fee (৳)</Label>
           <Input
             value={data.visitFee || ""}
             onChange={(e) => onChange({ ...data, visitFee: e.target.value })}

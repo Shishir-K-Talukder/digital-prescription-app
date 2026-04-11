@@ -246,9 +246,11 @@ const ClinicalSection = ({ data, onChange }: Props) => {
   ];
 
   return (
-    <div className="section-card p-4 sticky top-[60px]">
-      <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-        <ClipboardList className="w-4 h-4 text-primary" />
+    <div className="section-card p-5 sticky top-[60px]">
+      <h3 className="section-header mb-4">
+        <div className="section-header-icon flex items-center justify-center">
+          <ClipboardList className="w-3.5 h-3.5" />
+        </div>
         Clinical Notes
       </h3>
 

@@ -85,11 +85,18 @@ const Index = () => {
   };
 
   if (profileLoading || settingsLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading your data...</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+          <Stethoscope className="w-5 h-5 text-primary" />
+        </div>
+        <p className="text-sm text-muted-foreground">Loading your workspace...</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background pt-16">
+    <div className="min-h-screen bg-background pt-16 pb-8">
       <FloatingNav
         actions={[
           { icon: <FileText className="w-4 h-4" />, label: "New Rx", onClick: handleNewPrescription },
@@ -98,32 +105,39 @@ const Index = () => {
         ]}
       />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-5 bg-card border border-border shadow-sm h-10">
-            <TabsTrigger value="write" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <Stethoscope className="w-3.5 h-3.5" /> Write
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <Eye className="w-3.5 h-3.5" /> Preview
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
-              <History className="w-3.5 h-3.5" /> History
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-6">
+            <TabsList className="bg-card border border-border/60 shadow-sm h-11 p-1 rounded-xl">
+              <TabsTrigger value="write" className="gap-2 text-xs font-medium rounded-lg px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+                <Stethoscope className="w-3.5 h-3.5" /> Write Rx
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="gap-2 text-xs font-medium rounded-lg px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+                <Eye className="w-3.5 h-3.5" /> Preview
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-2 text-xs font-medium rounded-lg px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+                <History className="w-3.5 h-3.5" /> History
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="write" className="space-y-5 mt-0">
+          <TabsContent value="write" className="space-y-4 mt-0">
+            {/* Patient Info */}
             <PatientInfo patient={patient} onChange={setPatient} />
-            <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
+
+            {/* Clinical + Medicine side by side */}
+            <div className="rx-page-grid">
               <div className="min-w-0">
                 <ClinicalSection data={clinical} onChange={setClinical} />
               </div>
-              <div className="space-y-5 min-w-0">
+              <div className="space-y-4 min-w-0">
                 <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
               </div>
             </div>
+
+            {/* Advice & Documents */}
             <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
-            <div className="section-card p-4">
+            <div className="section-card p-5">
               <PatientDocuments patientId={prescriptions.find(
                 (rx) => rx.patient_data.name === patient.name && rx.patient_data.mobile === patient.mobile
               )?.id} />
@@ -135,9 +149,11 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="history" className="mt-0">
-            <div className="section-card p-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <History className="w-4 h-4 text-primary" />
+            <div className="section-card p-5">
+              <h3 className="section-header mb-4">
+                <div className="section-header-icon flex items-center justify-center">
+                  <History className="w-3.5 h-3.5" />
+                </div>
                 Prescription History
               </h3>
               <PrescriptionHistory
