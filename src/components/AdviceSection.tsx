@@ -71,9 +71,9 @@ const AdviceSection = ({ data, onChange, options }: Props) => {
             </SelectContent>
           </Select>
           <Input
-            type="date"
             value={data.followUpDate}
             onChange={(e) => onChange({ ...data, followUpDate: e.target.value })}
+            placeholder="কাস্টম ফলো-আপ লিখুন বা উপর থেকে নির্বাচন করুন..."
             className="h-8 text-sm"
           />
         </div>
