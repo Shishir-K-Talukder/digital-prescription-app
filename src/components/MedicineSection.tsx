@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { useRef, useState } from "react";
+import MedicineSettings, { MedicineOptions, loadMedicineOptions } from "./MedicineSettings";
 
 export interface Medicine {
   id: string;
@@ -20,20 +21,16 @@ interface Props {
   onChange: (m: Medicine[]) => void;
 }
 
-const TYPES = ["Tab", "Cap", "Syr", "Inj", "Supp", "Drop", "Cream", "Oint"];
-const DOSES = ["1+0+0", "0+0+1", "1+0+1", "1+1+1", "1+1+1+1", "0+1+0"];
-const DURATIONS = ["3 days", "5 days", "7 days", "10 days", "14 days", "1 month", "Continue"];
-const MEAL = ["খাবার পরে (After meal)", "খাবার আগে (Before meal)", "Empty stomach"];
-
 const MedicineSection = ({ medicines, onChange }: Props) => {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragRef = useRef<number | null>(null);
+  const [options, setOptions] = useState<MedicineOptions>(loadMedicineOptions);
 
   const addMedicine = () => {
     onChange([
       ...medicines,
-      { id: crypto.randomUUID(), type: "Tab", name: "", dose: "1+0+1", duration: "5 days", mealTiming: "খাবার পরে (After meal)", instructions: "" },
+      { id: crypto.randomUUID(), type: options.types[0] || "Tab", name: "", dose: options.doses[2] || "1+0+1", duration: options.durations[1] || "5 days", mealTiming: options.meals[0] || "After meal", instructions: "" },
     ]);
   };
 
@@ -45,37 +42,18 @@ const MedicineSection = ({ medicines, onChange }: Props) => {
     onChange(medicines.map((m) => (m.id === id ? { ...m, [field]: value } : m)));
   };
 
-  const handleDragStart = (idx: number) => {
-    setDragIdx(idx);
-    dragRef.current = idx;
-  };
-
-  const handleDragOver = (e: React.DragEvent, idx: number) => {
-    e.preventDefault();
-    setOverIdx(idx);
-  };
-
+  const handleDragStart = (idx: number) => { setDragIdx(idx); dragRef.current = idx; };
+  const handleDragOver = (e: React.DragEvent, idx: number) => { e.preventDefault(); setOverIdx(idx); };
   const handleDrop = (idx: number) => {
     const from = dragRef.current;
-    if (from === null || from === idx) {
-      setDragIdx(null);
-      setOverIdx(null);
-      return;
-    }
+    if (from === null || from === idx) { setDragIdx(null); setOverIdx(null); return; }
     const updated = [...medicines];
     const [moved] = updated.splice(from, 1);
     updated.splice(idx, 0, moved);
     onChange(updated);
-    setDragIdx(null);
-    setOverIdx(null);
-    dragRef.current = null;
+    setDragIdx(null); setOverIdx(null); dragRef.current = null;
   };
-
-  const handleDragEnd = () => {
-    setDragIdx(null);
-    setOverIdx(null);
-    dragRef.current = null;
-  };
+  const handleDragEnd = () => { setDragIdx(null); setOverIdx(null); dragRef.current = null; };
 
   return (
     <div className="bg-section-bg rounded-lg p-4 mb-4 border border-border">
@@ -84,9 +62,12 @@ const MedicineSection = ({ medicines, onChange }: Props) => {
           <span className="text-2xl font-serif italic text-primary">℞</span>
           Prescription
         </h3>
-        <Button onClick={addMedicine} size="sm" variant="outline" className="h-7 text-xs gap-1">
-          <Plus className="w-3 h-3" /> Add Medicine
-        </Button>
+        <div className="flex items-center gap-2">
+          <MedicineSettings options={options} onChange={setOptions} />
+          <Button onClick={addMedicine} size="sm" variant="outline" className="h-7 text-xs gap-1">
+            <Plus className="w-3 h-3" /> Add Medicine
+          </Button>
+        </div>
       </div>
 
       {medicines.length === 0 && (
@@ -118,7 +99,7 @@ const MedicineSection = ({ medicines, onChange }: Props) => {
                   <Label className="text-[10px] text-muted-foreground">Type</Label>
                   <Select value={med.type} onValueChange={(v) => updateMedicine(med.id, "type", v)}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    <SelectContent>{options.types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="col-span-2">
@@ -129,14 +110,14 @@ const MedicineSection = ({ medicines, onChange }: Props) => {
                   <Label className="text-[10px] text-muted-foreground">Dose</Label>
                   <Select value={med.dose} onValueChange={(v) => updateMedicine(med.id, "dose", v)}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{DOSES.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                    <SelectContent>{options.doses.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label className="text-[10px] text-muted-foreground">Duration</Label>
                   <Select value={med.duration} onValueChange={(v) => updateMedicine(med.id, "duration", v)}>
                     <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>{DURATIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                    <SelectContent>{options.durations.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="flex items-end gap-1">
@@ -144,7 +125,7 @@ const MedicineSection = ({ medicines, onChange }: Props) => {
                     <Label className="text-[10px] text-muted-foreground">Meal</Label>
                     <Select value={med.mealTiming} onValueChange={(v) => updateMedicine(med.id, "mealTiming", v)}>
                       <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                      <SelectContent>{MEAL.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                      <SelectContent>{options.meals.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => removeMedicine(med.id)}>
