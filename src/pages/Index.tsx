@@ -53,6 +53,7 @@ const Index = () => {
     customWidth: "210",
     customHeight: "297",
     headerSize: "medium",
+    customHeaderHeight: "80",
     showDoctorInfo: true,
     showCC: true,
     showOE: true,

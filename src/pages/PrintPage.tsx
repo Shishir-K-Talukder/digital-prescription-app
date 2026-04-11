@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import html2canvas from "html2canvas";
 import PrintPreview, { PrintSettings, defaultPrintSettings } from "@/components/PrintPreview";
 import { DoctorInfo } from "@/components/DoctorHeader";
 import { PatientData } from "@/components/PatientInfo";
@@ -15,6 +16,7 @@ const PrintPage = () => {
     advice: AdviceData;
     printSettings: PrintSettings;
   } | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("prescription-print-data");
@@ -33,11 +35,30 @@ const PrintPage = () => {
 
   useEffect(() => {
     if (data) {
-      // Auto-trigger print after render
-      const timer = setTimeout(() => window.print(), 500);
+      // Auto-download as image then trigger print
+      const timer = setTimeout(async () => {
+        await downloadAsImage();
+        window.print();
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [data]);
+
+  const downloadAsImage = async () => {
+    const el = document.getElementById("prescription-print");
+    if (!el) return;
+    try {
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const link = document.createElement("a");
+      const patientName = data?.patient?.name || "prescription";
+      const date = data?.patient?.date || new Date().toISOString().split("T")[0];
+      link.download = `Rx_${patientName.replace(/\s+/g, "_")}_${date}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (e) {
+      console.error("Download failed:", e);
+    }
+  };
 
   if (!data) {
     return <div className="p-8 text-center text-gray-500">No prescription data found. Please go back and click Print.</div>;
@@ -67,13 +88,19 @@ const PrintPage = () => {
           🖨️ Print Now
         </button>
         <button
+          onClick={downloadAsImage}
+          className="px-6 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 mr-2"
+        >
+          📥 Download
+        </button>
+        <button
           onClick={() => window.close()}
           className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300"
         >
           ✕ Close
         </button>
       </div>
-      <div className="py-6">
+      <div className="py-6" ref={printRef}>
         <PrintPreview
           doctor={data.doctor}
           patient={data.patient}

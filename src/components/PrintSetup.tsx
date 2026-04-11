@@ -61,15 +61,36 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         {/* Header Size */}
         <div>
           <Label className="text-xs text-muted-foreground">Header Size</Label>
-          <Select value={settings.headerSize} onValueChange={(v) => onChange({ ...settings, headerSize: v as PrintSettings["headerSize"] })}>
+          <Select value={settings.headerSize} onValueChange={(v) => {
+            if (v === "custom") {
+              onChange({ ...settings, headerSize: "custom" as any, customHeaderHeight: settings.customHeaderHeight || "80" });
+            } else {
+              onChange({ ...settings, headerSize: v as PrintSettings["headerSize"] });
+            }
+          }}>
             <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="small">Small</SelectItem>
               <SelectItem value="medium">Medium</SelectItem>
               <SelectItem value="large">Large</SelectItem>
+              <SelectItem value="custom">Custom</SelectItem>
             </SelectContent>
           </Select>
         </div>
+
+        {/* Custom header height */}
+        {settings.headerSize === "custom" && (
+          <div>
+            <Label className="text-xs text-muted-foreground">Header Height (px)</Label>
+            <Input
+              value={settings.customHeaderHeight || "80"}
+              onChange={(e) => onChange({ ...settings, customHeaderHeight: e.target.value })}
+              placeholder="80"
+              className="h-8 text-xs"
+              type="number"
+            />
+          </div>
+        )}
       </div>
 
       {/* Section visibility toggles */}
