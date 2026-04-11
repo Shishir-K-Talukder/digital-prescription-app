@@ -6,6 +6,7 @@ import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
+import { loadMedicineOptions, MedicineOptions } from "@/components/MedicineSettings";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview, { PrintSettings } from "@/components/PrintPreview";
 import PrintSetup from "@/components/PrintSetup";
