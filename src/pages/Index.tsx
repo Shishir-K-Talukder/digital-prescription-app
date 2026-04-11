@@ -124,7 +124,7 @@ const Index = () => {
             <PatientInfo patient={patient} onChange={setPatient} />
             <ClinicalSection data={clinical} onChange={setClinical} />
             <MedicineSection medicines={medicines} onChange={setMedicines} />
-            <AdviceSection data={advice} onChange={setAdvice} />
+            <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
           </TabsContent>
 
           <TabsContent value="preview">
