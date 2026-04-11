@@ -5,7 +5,20 @@ export interface MedicineSuggestion {
   strength: string;
   generic: string;
   company: string;
+  detectedType: string;
 }
+
+const detectType = (strength: string): string => {
+  const s = strength.toLowerCase();
+  if (/\/5\s*ml|\/ml|mg\/ml/.test(s) && !/injection|iv|im/.test(s)) return "Syr";
+  if (/drop|\/drop/.test(s)) return "Drop";
+  if (/cream/i.test(s)) return "Cream";
+  if (/ointment|oint/i.test(s)) return "Oint";
+  if (/suppository|supp/i.test(s)) return "Supp";
+  if (/injection|iv|im|\/vial|\/ampoule/i.test(s)) return "Inj";
+  if (/capsule|cap/i.test(s)) return "Cap";
+  return "Tab";
+};
 
 interface RawMedicine {
   n: string;
@@ -38,7 +51,7 @@ const searchMedicines = (data: RawMedicine[], query: string): MedicineSuggestion
   for (const med of data) {
     if (results.length >= 20) break;
     if (med.n.toLowerCase().includes(q)) {
-      results.push({ name: med.n, strength: med.s, generic: med.g, company: med.c });
+      results.push({ name: med.n, strength: med.s, generic: med.g, company: med.c, detectedType: detectType(med.s) });
     }
   }
 
