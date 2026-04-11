@@ -31,7 +31,7 @@ const MedicineNameInput = ({ value, type, onChange, onSelect }: { value: string;
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const handleSelect = (med: { name: string; strength: string; detectedType: string }) => {
-    const fullName = med.strength ? `${med.name} ${med.strength}` : med.name;
+    const fullName = `${med.detectedType}. ${med.name} ${med.strength}`.trim();
     setQuery(fullName);
     onChange(fullName);
     onSelect(med);
@@ -40,17 +40,14 @@ const MedicineNameInput = ({ value, type, onChange, onSelect }: { value: string;
 
   return (
     <div ref={wrapperRef} className="relative">
-      <div className="relative flex items-center">
-        {type && <span className="absolute left-2 z-10 bg-primary/15 text-primary font-bold rounded px-1.5 py-0.5 text-[10px]">{type}.</span>}
-        <Input
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setShowSuggestions(true); }}
-          onFocus={() => setShowSuggestions(true)}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          placeholder="Type medicine name..."
-          className={`h-8 text-xs ${type ? 'pl-12' : ''}`}
-        />
-      </div>
+      <Input
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); onChange(e.target.value); setShowSuggestions(true); }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        placeholder="Type medicine name..."
+        className="h-8 text-xs"
+      />
       {showSuggestions && (query.length >= 2) && (
         <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-[200px] overflow-y-auto">
           {loading && (

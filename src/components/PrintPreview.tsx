@@ -141,7 +141,7 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
           <div className="space-y-4">
             {medicines.map((med) => (
               <div key={med.id} className="text-xs">
-                <p className="font-bold uppercase">{med.type}. {med.name}</p>
+                <p className="font-bold uppercase">{med.name}</p>
                 <p className="text-gray-600 mt-0.5">
                   {med.dose} — ({med.mealTiming}){med.duration ? ` — ${med.duration}` : ""}
                 </p>
