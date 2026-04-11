@@ -143,16 +143,10 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
               <div key={med.id} className="text-xs">
                 <p className="font-bold uppercase">{med.type}. {med.name}</p>
                 <p className="text-gray-600 mt-0.5">{med.dose} - ({med.mealTiming})</p>
+                {med.duration && <p className="text-gray-500 mt-0.5">- {med.duration}</p>}
               </div>
             ))}
           </div>
-          {medicines.length > 0 && (
-            <div className="mt-4">
-              {medicines.map((med) => (
-                <div key={med.id} className="text-xs text-right text-gray-500">~ {med.duration}</div>
-              ))}
-            </div>
-          )}
           {(advice.advice || advice.followUpDate) && (
             <div className="mt-8 pt-3 border-t border-gray-300 text-xs">
               {advice.advice && (
@@ -160,6 +154,9 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
               )}
               {advice.followUpDate && (
                 <p><strong>Follow-up:</strong> {advice.followUpDate}</p>
+              )}
+              {advice.followUpDays && (
+                <p><strong>Follow-up:</strong> {advice.followUpDays}</p>
               )}
             </div>
           )}
