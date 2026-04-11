@@ -65,8 +65,11 @@ const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onCha
               className="w-full text-left px-3 py-1.5 hover:bg-accent/50 transition-colors border-b border-border/30 last:border-0"
               onMouseDown={(e) => { e.preventDefault(); handleSelect(med); }}
             >
-              <div className="text-xs font-medium text-foreground">{med.name} {med.strength}</div>
-              <div className="text-[10px] text-muted-foreground">{med.generic} • {med.company}</div>
+              <div className="text-xs font-medium text-foreground">
+                <span className="inline-block bg-primary/15 text-primary font-bold rounded px-1.5 py-0.5 mr-1.5 text-[10px]">{med.detectedType}</span>
+                {med.name} {med.strength}
+              </div>
+              <div className="text-[10px] text-muted-foreground pl-[42px]">{med.generic} • {med.company}</div>
             </button>
           ))}
         </div>
