@@ -73,11 +73,12 @@ const PrintPage = () => {
     <>
       <style>{`
         @media print {
-          @page { size: ${pageCSS} portrait; margin: 10mm; }
-          body { margin: 0; padding: 0; }
+          @page { size: ${pageCSS}; margin: 10mm; }
+          body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .no-print { display: none !important; }
           .print-preview { border: none !important; box-shadow: none !important; max-width: 100% !important; }
         }
+        @page { size: portrait; }
         body { background: #f5f5f5; }
       `}</style>
       <div className="no-print py-4 text-center bg-white border-b shadow-sm">
