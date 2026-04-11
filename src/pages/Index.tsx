@@ -1,22 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Settings, FileText, Stethoscope, Eye, SlidersHorizontal } from "lucide-react";
+import { Printer, Settings, FileText, Stethoscope, Eye, SlidersHorizontal, Save, History, LogOut } from "lucide-react";
 import DoctorHeader, { DoctorInfo } from "@/components/DoctorHeader";
 import PatientInfo, { PatientData } from "@/components/PatientInfo";
 import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/components/ClinicalSection";
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
-import { loadMedicineOptions, MedicineOptions } from "@/components/MedicineSettings";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
-import PrintPreview, { PrintSettings } from "@/components/PrintPreview";
+import PrintPreview from "@/components/PrintPreview";
 import PrintSetup from "@/components/PrintSetup";
+import PrescriptionHistory from "@/components/PrescriptionHistory";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfile";
+import { useDoctorSettings } from "@/hooks/useDoctorSettings";
+import { usePrescriptions, PrescriptionRecord } from "@/hooks/usePrescriptions";
 
 const today = new Date().toISOString().split("T")[0];
 
 const Index = () => {
+  const { signOut } = useAuth();
+  const { profile, saveProfile, loading: profileLoading } = useProfile();
+  const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
+  const { prescriptions, savePrescription, deletePrescription, loading: rxLoading } = usePrescriptions();
+
   const [activeTab, setActiveTab] = useState("write");
   const [editDoctor, setEditDoctor] = useState(false);
-  const [medicineOptions, setMedicineOptions] = useState<MedicineOptions>(loadMedicineOptions);
 
   const [doctor, setDoctor] = useState<DoctorInfo>({
     name: "", degrees: "", specialization: "", bmdcNo: "", chamberAddress: "", phone: "",
@@ -36,23 +44,34 @@ const Index = () => {
     advice: "", followUpDate: "",
   });
 
-  const [printSettings, setPrintSettings] = useState<PrintSettings>(() => {
-    try {
-      const stored = localStorage.getItem("print-settings");
-      if (stored) return { ...{ pageSize: "A4", customWidth: "210", customHeight: "297", headerSize: "medium", customHeaderHeight: "80", showDoctorInfo: true, showCC: true, showOE: true, showDiagnosis: true, showInvestigation: true }, ...JSON.parse(stored) };
-    } catch {}
-    return { pageSize: "A4", customWidth: "210", customHeight: "297", headerSize: "medium", customHeaderHeight: "80", showDoctorInfo: true, showCC: true, showOE: true, showDiagnosis: true, showInvestigation: true };
-  });
+  // Load profile data when ready
+  useEffect(() => {
+    if (!profileLoading && profile.name) {
+      setDoctor(profile);
+    }
+  }, [profileLoading, profile]);
 
-  const handlePrintSettingsChange = (s: PrintSettings) => {
-    setPrintSettings(s);
-    localStorage.setItem("print-settings", JSON.stringify(s));
+  const handleDoctorChange = (d: DoctorInfo) => {
+    setDoctor(d);
+    saveProfile(d);
   };
 
   const handlePrint = () => {
     const printData = { doctor, patient, clinical, medicines, advice, printSettings };
     sessionStorage.setItem("prescription-print-data", JSON.stringify(printData));
     window.open("/print", "_blank");
+  };
+
+  const handleSave = () => {
+    savePrescription(patient, clinical, medicines, advice);
+  };
+
+  const handleLoadPrescription = (rx: PrescriptionRecord) => {
+    setPatient({ ...rx.patient_data, date: today });
+    setClinical(rx.clinical_data);
+    setMedicines(rx.medicines);
+    setAdvice(rx.advice);
+    setActiveTab("write");
   };
 
   const handleNewPrescription = () => {
@@ -63,9 +82,12 @@ const Index = () => {
     setActiveTab("write");
   };
 
+  if (profileLoading || settingsLoading) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground text-sm">Loading your data...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -86,16 +108,23 @@ const Index = () => {
               <FileText className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">New Rx</span>
             </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={handleSave}>
+              <Save className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Save</span>
+            </Button>
             <Button size="sm" className="gap-1.5 text-xs h-8 shadow-sm" onClick={handlePrint}>
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Print</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-8 text-destructive" onClick={signOut}>
+              <LogOut className="w-3.5 h-3.5" />
             </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
-        <DoctorHeader doctor={doctor} onChange={setDoctor} editMode={editDoctor} />
+        <DoctorHeader doctor={doctor} onChange={handleDoctorChange} editMode={editDoctor} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-5 bg-card border border-border shadow-sm h-10">
@@ -107,6 +136,10 @@ const Index = () => {
               <Eye className="w-3.5 h-3.5" />
               Preview
             </TabsTrigger>
+            <TabsTrigger value="history" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
+              <History className="w-3.5 h-3.5" />
+              History
+            </TabsTrigger>
             <TabsTrigger value="setup" className="gap-1.5 text-xs data-[state=active]:shadow-sm">
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Print Setup
@@ -114,23 +147,15 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="write" className="space-y-5 mt-0">
-            {/* Patient Info - Full Width */}
             <PatientInfo patient={patient} onChange={setPatient} />
-
-            {/* Two Column Layout: Clinical Left, Rx Right */}
             <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
-              {/* Left Column - Clinical Notes */}
               <div className="min-w-0">
                 <ClinicalSection data={clinical} onChange={setClinical} />
               </div>
-
-              {/* Right Column - Prescription */}
               <div className="space-y-5 min-w-0">
-                <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={setMedicineOptions} />
+                <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
               </div>
             </div>
-
-            {/* Advice & Follow-up - Full Width */}
             <AdviceSection data={advice} onChange={setAdvice} options={medicineOptions} />
           </TabsContent>
 
@@ -138,8 +163,23 @@ const Index = () => {
             <PrintPreview doctor={doctor} patient={patient} clinical={clinical} medicines={medicines} advice={advice} printSettings={printSettings} />
           </TabsContent>
 
+          <TabsContent value="history" className="mt-0">
+            <div className="section-card p-4">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                <History className="w-4 h-4 text-primary" />
+                Prescription History
+              </h3>
+              <PrescriptionHistory
+                prescriptions={prescriptions}
+                onLoad={handleLoadPrescription}
+                onDelete={deletePrescription}
+                loading={rxLoading}
+              />
+            </div>
+          </TabsContent>
+
           <TabsContent value="setup" className="mt-0">
-            <PrintSetup settings={printSettings} onChange={handlePrintSettingsChange} />
+            <PrintSetup settings={printSettings} onChange={savePrintSettings} />
           </TabsContent>
         </Tabs>
       </main>
