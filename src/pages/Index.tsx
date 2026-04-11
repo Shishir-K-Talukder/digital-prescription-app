@@ -50,18 +50,18 @@ const Index = () => {
     followUpDate: "",
   });
 
-  const [printSettings, setPrintSettings] = useState<PrintSettings>({
-    pageSize: "A4",
-    customWidth: "210",
-    customHeight: "297",
-    headerSize: "medium",
-    customHeaderHeight: "80",
-    showDoctorInfo: true,
-    showCC: true,
-    showOE: true,
-    showDiagnosis: true,
-    showInvestigation: true,
+  const [printSettings, setPrintSettings] = useState<PrintSettings>(() => {
+    try {
+      const stored = localStorage.getItem("print-settings");
+      if (stored) return { ...{ pageSize: "A4", customWidth: "210", customHeight: "297", headerSize: "medium", customHeaderHeight: "80", showDoctorInfo: true, showCC: true, showOE: true, showDiagnosis: true, showInvestigation: true }, ...JSON.parse(stored) };
+    } catch {}
+    return { pageSize: "A4", customWidth: "210", customHeight: "297", headerSize: "medium", customHeaderHeight: "80", showDoctorInfo: true, showCC: true, showOE: true, showDiagnosis: true, showInvestigation: true };
   });
+
+  const handlePrintSettingsChange = (s: PrintSettings) => {
+    setPrintSettings(s);
+    localStorage.setItem("print-settings", JSON.stringify(s));
+  };
 
   const handlePrint = () => {
     const printData = { doctor, patient, clinical, medicines, advice, printSettings };
@@ -132,7 +132,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="setup">
-            <PrintSetup settings={printSettings} onChange={setPrintSettings} />
+            <PrintSetup settings={printSettings} onChange={handlePrintSettingsChange} />
           </TabsContent>
         </Tabs>
       </main>
