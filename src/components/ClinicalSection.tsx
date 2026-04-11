@@ -17,6 +17,7 @@ export interface OnExaminationData {
 export interface ClinicalData {
   chiefComplaint: string;
   onExamination: OnExaminationData;
+  drugHistory: string;
   diagnosis: string;
   investigation: string;
 }
