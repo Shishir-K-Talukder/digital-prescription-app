@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { ClipboardList, Plus, X } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { MedicineOptions } from "@/components/MedicineSettings";
-import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface OnExaminationData {
   bp: string; weight: string; temp: string; pulse: string; heart: string; lungs: string; abd: string;
