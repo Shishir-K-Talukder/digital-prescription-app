@@ -226,15 +226,30 @@ const InvestigationTab = ({ value, onChange, investigationList }: { value: strin
 const DrugHistoryMedicineSelector = ({ selectedMedicines, onChange }: { selectedMedicines: string[]; onChange: (meds: string[]) => void }) => {
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedType, setSelectedType] = useState("Tab");
   const { suggestions } = useMedicineSearch(query);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const addMedicine = (name: string) => {
-    if (!selectedMedicines.includes(name)) {
-      onChange([...selectedMedicines, name]);
+  const MEDICINE_TYPES = ["Tab", "Cap", "Syp", "Inj", "Drop", "Cream", "Oint", "Supp"];
+
+  const addMedicine = (displayText: string) => {
+    if (!selectedMedicines.includes(displayText)) {
+      onChange([...selectedMedicines, displayText]);
     }
     setQuery("");
     setShowSuggestions(false);
+  };
+
+  const addFromSuggestion = (s: MedicineSuggestion) => {
+    const text = `${s.detectedType}. ${s.name} ${s.strength}`;
+    addMedicine(text);
+  };
+
+  const addManual = () => {
+    const trimmed = query.trim();
+    if (trimmed) {
+      addMedicine(`${selectedType}. ${trimmed}`);
+    }
   };
 
   const removeMedicine = (name: string) => {
@@ -244,8 +259,7 @@ const DrugHistoryMedicineSelector = ({ selectedMedicines, onChange }: { selected
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const trimmed = query.trim();
-      if (trimmed) addMedicine(trimmed);
+      addManual();
     }
   };
 
@@ -255,40 +269,47 @@ const DrugHistoryMedicineSelector = ({ selectedMedicines, onChange }: { selected
         <Pill className="w-3.5 h-3.5" /> Current / Previous Medicines
       </Label>
 
-      {/* Selected medicines as chips */}
+      {/* Selected medicines as bullet list */}
       {selectedMedicines.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 p-2 bg-accent/20 rounded-lg border border-border/50">
+        <div className="p-2.5 bg-accent/20 rounded-lg border border-border/50 space-y-1">
           {selectedMedicines.map((med) => (
-            <span
-              key={med}
-              className="inline-flex items-center gap-1 bg-primary/10 text-primary text-[11px] font-medium px-2 py-0.5 rounded-full border border-primary/20"
-            >
-              • {med}
-              <button type="button" onClick={() => removeMedicine(med)} className="hover:text-destructive transition-colors">
-                <X className="w-3 h-3" />
+            <div key={med} className="flex items-center justify-between group">
+              <span className="text-xs font-medium text-foreground">• {med}</span>
+              <button type="button" onClick={() => removeMedicine(med)} className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-all">
+                <X className="w-3.5 h-3.5" />
               </button>
-            </span>
+            </div>
           ))}
         </div>
       )}
 
-      {/* Search input */}
+      {/* Type selector + Search input */}
       <div ref={wrapperRef} className="relative">
         <div className="flex gap-1.5">
+          <Select value={selectedType} onValueChange={setSelectedType}>
+            <SelectTrigger className="h-8 w-[80px] text-xs shrink-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MEDICINE_TYPES.map((t) => (
+                <SelectItem key={t} value={t} className="text-xs">{t}.</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
             value={query}
             onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             onKeyDown={handleKeyDown}
-            placeholder="Search medicine name..."
+            placeholder="Search medicine name & strength..."
             className="h-8 text-xs flex-1"
           />
           <Button
             variant="outline"
             size="sm"
             className="h-8 text-xs gap-1 shrink-0"
-            onClick={() => { if (query.trim()) addMedicine(query.trim()); }}
+            onClick={addManual}
             disabled={!query.trim()}
           >
             <Plus className="w-3 h-3" /> Add
@@ -303,10 +324,14 @@ const DrugHistoryMedicineSelector = ({ selectedMedicines, onChange }: { selected
                 key={`${s.name}-${s.strength}-${i}`}
                 type="button"
                 className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent transition-colors flex items-center justify-between border-b border-border/30 last:border-0"
-                onMouseDown={(e) => { e.preventDefault(); addMedicine(`${s.name} ${s.strength}`); }}
+                onMouseDown={(e) => { e.preventDefault(); addFromSuggestion(s); }}
               >
-                <span className="font-medium">{s.name} <span className="text-muted-foreground">{s.strength}</span></span>
-                <span className="text-[10px] text-muted-foreground">{s.generic}</span>
+                <span>
+                  <span className="font-bold text-primary">{s.detectedType}.</span>{" "}
+                  <span className="font-medium">{s.name}</span>{" "}
+                  <span className="text-muted-foreground">{s.strength}</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground ml-2">{s.generic}</span>
               </button>
             ))}
           </div>
