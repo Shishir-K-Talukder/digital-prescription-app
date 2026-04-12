@@ -24,10 +24,14 @@ interface FormulationHint {
 }
 
 interface SearchParts {
+  original: string;
   raw: string;
   rawTokens: string[];
   searchText: string;
   tokens: string[];
+  brandTokens: string[];
+  strengthTokens: string[];
+  nameSearchTerms: string[];
   searchTerms: string[];
   formulationHint: FormulationHint | null;
 }
@@ -36,6 +40,8 @@ interface RankedMedicine extends DbMedicine {
   detectedType: string;
   normalizedName: string;
   normalizedGeneric: string;
+  normalizedStrength: string;
+  strengthTokens: string[];
   searchableText: string;
 }
 
@@ -94,6 +100,45 @@ const FORMULATION_QUERY_TERMS = new Set([
   "softgel",
 ]);
 
+const STRENGTH_QUERY_TERMS = new Set([
+  "mg", "mcg", "g", "gm", "kg", "ml", "l", "iu", "%", "w", "v",
+]);
+
+const splitAlphaNumericToken = (token: string) =>
+  token
+    .replace(/([a-z%]+)(\d)/gi, "$1 $2")
+    .replace(/(\d)([a-z%]+)/gi, "$1 $2")
+    .split(" ")
+    .filter(Boolean);
+
+const tokenizeStrengthText = (value: string) => tokenizeText(value).flatMap(splitAlphaNumericToken).filter(Boolean);
+
+const isStrengthToken = (token: string) => /\d/.test(token) || STRENGTH_QUERY_TERMS.has(token);
+
+const hasUsefulSearchTokens = (tokens: string[]) => tokens.some((token) => token.length > 1 && !isStrengthToken(token));
+
+const prepareDbSearchTerm = (value: string) => value.trim().replace(/[%(),'\"]/g, " ").replace(/\s+/g, " ").trim();
+
+const buildOrFilters = (fields: Array<"name" | "generic" | "strength">, terms: string[]) =>
+  terms
+    .flatMap((term) => {
+      const safeTerm = prepareDbSearchTerm(term);
+      if (!safeTerm) return [];
+      return fields.map((field) => `${field}.ilike.%${safeTerm}%`);
+    })
+    .join(",");
+
+const dedupeMedicines = (medicines: DbMedicine[]) => {
+  const seen = new Set<string>();
+
+  return medicines.filter((medicine) => {
+    const key = `${medicine.name}__${medicine.strength}__${medicine.generic}__${medicine.company}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 const getTypeGroup = (type: string): MedicineTypeGroup => {
   if (["Cream", "Gel", "Lotion", "Oint", "Shampoo", "Spray"].includes(type)) return "topical";
   if (["Tab", "Cap", "Sachet"].includes(type)) return "oralSolid";
@@ -125,21 +170,37 @@ const detectFormulationHint = (query: string): FormulationHint | null => {
 };
 
 const getSearchParts = (query: string) => {
+  const original = prepareDbSearchTerm(query);
+  const originalTokens = original.split(" ").filter(Boolean);
   const raw = sanitizeQuery(query);
   const rawTokens = raw.split(" ").filter(Boolean);
   const filteredTokens = rawTokens.filter((token) => !FORMULATION_QUERY_TERMS.has(token));
-  const tokens = filteredTokens.length > 0 ? filteredTokens : rawTokens;
+  const tokens = hasUsefulSearchTokens(filteredTokens) ? filteredTokens : rawTokens;
+  const brandTokens = tokens.filter((token) => !isStrengthToken(token));
   const searchText = tokens.join(" ");
-  const searchTerms = [...new Set([searchText, raw, ...tokens, ...rawTokens].filter(Boolean))]
+  const strengthTokens = [...new Set(tokenizeStrengthText(raw).filter(isStrengthToken))];
+  const filteredOriginalTokens = originalTokens.filter((token) => !FORMULATION_QUERY_TERMS.has(normalizeText(token)));
+  const originalSearchTokens = hasUsefulSearchTokens(filteredOriginalTokens.map(normalizeText)) ? filteredOriginalTokens : originalTokens;
+  const originalBrandTokens = originalSearchTokens.filter((token) => !isStrengthToken(normalizeText(token)));
+  const originalBrandText = prepareDbSearchTerm(originalBrandTokens.join(" "));
+  const nameSearchTerms = [...new Set([originalBrandText, ...originalBrandTokens].map(prepareDbSearchTerm).filter(Boolean))]
     .filter((term, _, terms) => term.length > 1 || terms.length === 1)
     .sort((a, b) => b.length - a.length)
     .slice(0, 5);
+  const searchTerms = [...new Set([searchText, raw, ...tokens, ...rawTokens, ...nameSearchTerms.map(normalizeText)].filter(Boolean))]
+    .filter((term, _, terms) => term.length > 1 || terms.length === 1)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 7);
 
   return {
+    original,
     raw,
     rawTokens,
     searchText,
     tokens,
+    brandTokens,
+    strengthTokens,
+    nameSearchTerms,
     searchTerms,
     formulationHint: detectFormulationHint(query),
   } satisfies SearchParts;
@@ -154,6 +215,8 @@ const toRankedMedicine = (medicine: DbMedicine): RankedMedicine => ({
   detectedType: detectType(medicine.name, medicine.strength, medicine.generic),
   normalizedName: normalizeText(medicine.name),
   normalizedGeneric: normalizeText(medicine.generic),
+  normalizedStrength: normalizeText(medicine.strength),
+  strengthTokens: tokenizeStrengthText(medicine.strength),
   searchableText: buildSearchableText(medicine),
 });
 
@@ -164,42 +227,69 @@ const getFormulationPriority = (medicine: RankedMedicine, formulationHint: Formu
   return 2;
 };
 
+const getStrengthPriority = (medicine: RankedMedicine, strengthTokens: string[]) => {
+  if (strengthTokens.length === 0) return 0;
+
+  const hasExactStrengthMatch = strengthTokens.every((token) => medicine.strengthTokens.includes(token));
+  if (hasExactStrengthMatch) return 0;
+
+  const numericTokens = strengthTokens.filter((token) => /\d/.test(token));
+  const hasNumericStrengthMatch = numericTokens.length > 0 && numericTokens.every((token) => medicine.strengthTokens.includes(token));
+  if (hasNumericStrengthMatch) return 1;
+
+  if (strengthTokens.some((token) => medicine.strengthTokens.includes(token))) return 2;
+  return 3;
+};
+
 const getMatchRank = (medicine: RankedMedicine, parts: SearchParts) => {
-  const { raw, rawTokens, searchText, tokens } = parts;
+  const { raw, rawTokens, searchText, tokens, brandTokens, strengthTokens } = parts;
+  const brandText = brandTokens.join(" ");
   const name = medicine.normalizedName;
   const generic = medicine.normalizedGeneric;
   const searchable = medicine.searchableText;
+  const hasExactStrengthMatch = strengthTokens.length > 0 && strengthTokens.every((token) => medicine.strengthTokens.includes(token));
 
-  if (raw && name === raw) return 0;
-  if (raw && generic === raw) return 1;
-  if (rawTokens.length > 1 && matchesTokens(name, rawTokens)) return 2;
-  if (rawTokens.length > 1 && matchesTokens(generic, rawTokens)) return 3;
-  if (searchText && name === searchText) return 4;
-  if (searchText && generic === searchText) return 5;
-  if (searchText && name.startsWith(searchText)) return 6;
-  if (searchText && generic.startsWith(searchText)) return 7;
-  if (tokens.length > 1 && matchesTokens(name, tokens)) return 8;
-  if (tokens.length > 1 && matchesTokens(generic, tokens)) return 9;
-  if (raw && searchable.includes(raw)) return 10;
-  if (searchText && searchable.includes(searchText)) return 11;
-  if (tokens.length > 0 && matchesTokens(searchable, tokens)) return 12;
-  return 13;
+  if (brandText && name === brandText && hasExactStrengthMatch) return 0;
+  if (brandText && name === brandText) return 1;
+  if (brandText && name.startsWith(brandText) && hasExactStrengthMatch) return 2;
+  if (brandText && name.startsWith(brandText)) return 3;
+  if (brandTokens.length > 0 && matchesTokens(name, brandTokens) && hasExactStrengthMatch) return 4;
+  if (brandTokens.length > 0 && matchesTokens(name, brandTokens)) return 5;
+
+  if (raw && name === raw) return 6;
+  if (raw && generic === raw) return 7;
+  if (rawTokens.length > 1 && matchesTokens(name, rawTokens)) return 8;
+  if (rawTokens.length > 1 && matchesTokens(generic, rawTokens)) return 9;
+  if (searchText && name === searchText) return 10;
+  if (searchText && generic === searchText) return 11;
+  if (searchText && name.startsWith(searchText)) return 12;
+  if (searchText && generic.startsWith(searchText)) return 13;
+  if (tokens.length > 1 && matchesTokens(name, tokens)) return 14;
+  if (tokens.length > 1 && matchesTokens(generic, tokens)) return 15;
+  if (raw && searchable.includes(raw)) return 16;
+  if (searchText && searchable.includes(searchText)) return 17;
+  if (tokens.length > 0 && matchesTokens(searchable, tokens)) return 18;
+  return 19;
 };
 
 const filterAndSortMatches = (medicines: DbMedicine[], query: string) => {
   const parts = getSearchParts(query);
-  const { raw, searchText, tokens, formulationHint } = parts;
+  const { raw, searchText, tokens, brandTokens, strengthTokens, formulationHint } = parts;
   const targetLength = searchText.length || raw.length;
 
   return medicines
     .map(toRankedMedicine)
     .filter((medicine) => {
       if (searchText && medicine.searchableText.includes(searchText)) return true;
+      if (brandTokens.length > 0 && matchesTokens(medicine.normalizedName, brandTokens)) return true;
       return tokens.length > 0 && matchesTokens(medicine.searchableText, tokens);
     })
     .sort((a, b) => {
       const rankDiff = getMatchRank(a, parts) - getMatchRank(b, parts);
       if (rankDiff !== 0) return rankDiff;
+
+      const strengthDiff = getStrengthPriority(a, strengthTokens) - getStrengthPriority(b, strengthTokens);
+      if (strengthDiff !== 0) return strengthDiff;
 
       const formulationDiff = getFormulationPriority(a, formulationHint) - getFormulationPriority(b, formulationHint);
       if (formulationDiff !== 0) return formulationDiff;
@@ -249,28 +339,54 @@ const loadFallback = (): Promise<DbMedicine[]> => {
 };
 
 const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
-  const { searchTerms } = getSearchParts(query);
-  if (searchTerms.length === 0) return [];
+  const { nameSearchTerms, searchTerms } = getSearchParts(query);
+  if (nameSearchTerms.length === 0 && searchTerms.length === 0) return [];
 
   const refineMatches = (medicines: DbMedicine[]) => filterAndSortMatches(medicines, query).map(toSuggestion);
-  const orFilters = searchTerms
-    .flatMap((term) => [
-      `name.ilike.%${term}%`,
-      `generic.ilike.%${term}%`,
-      `strength.ilike.%${term}%`,
-    ])
-    .join(",");
+  const candidates: DbMedicine[] = [];
 
-  const { data, error } = await supabase
-    .from("medicines")
-    .select("name, strength, generic, company")
-    .or(orFilters)
-    .limit(200);
+  const nameFilters = buildOrFilters(["name"], nameSearchTerms);
+  if (nameFilters) {
+    const { data: brandSeedMatches, error: brandSeedError } = await supabase
+      .from("medicines")
+      .select("name, strength, generic, company")
+      .or(nameFilters)
+      .limit(300);
 
-  if (!error && data && data.length > 0) {
-    const refined = refineMatches(data as unknown as DbMedicine[]);
-    if (refined.length > 0) return refined;
+    if (!brandSeedError && brandSeedMatches && brandSeedMatches.length > 0) {
+      const brandSeeds = brandSeedMatches as unknown as DbMedicine[];
+      candidates.push(...brandSeeds);
+
+      const matchedBrandNames = [...new Set(brandSeeds.map((medicine) => medicine.name))].slice(0, 30);
+      if (matchedBrandNames.length > 0) {
+        const { data: brandVariants, error: brandVariantsError } = await supabase
+          .from("medicines")
+          .select("name, strength, generic, company")
+          .in("name", matchedBrandNames)
+          .limit(800);
+
+        if (!brandVariantsError && brandVariants && brandVariants.length > 0) {
+          candidates.push(...(brandVariants as unknown as DbMedicine[]));
+        }
+      }
+    }
   }
+
+  const broadFilters = buildOrFilters(["name", "generic", "strength"], [...nameSearchTerms, ...searchTerms].slice(0, 8));
+  if (broadFilters) {
+    const { data: broadMatches, error: broadError } = await supabase
+      .from("medicines")
+      .select("name, strength, generic, company")
+      .or(broadFilters)
+      .limit(400);
+
+    if (!broadError && broadMatches && broadMatches.length > 0) {
+      candidates.push(...(broadMatches as unknown as DbMedicine[]));
+    }
+  }
+
+  const refined = refineMatches(dedupeMedicines(candidates));
+  if (refined.length > 0) return refined;
 
   const fallback = await loadFallback();
   return refineMatches(fallback);

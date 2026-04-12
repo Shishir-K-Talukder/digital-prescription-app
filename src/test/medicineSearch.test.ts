@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { __medicineSearchUtils } from "@/hooks/useMedicineSearch";
 
-const { detectType, filterAndSortMatches } = __medicineSearchUtils;
+const { detectType, filterAndSortMatches, getSearchParts } = __medicineSearchUtils;
 
 describe("medicine search helpers", () => {
   it("detects formulation from the generic field when name and strength do not include it", () => {
@@ -33,5 +33,34 @@ describe("medicine search helpers", () => {
     );
 
     expect(results[0]?.detectedType).toBe("Cap");
+  });
+
+  it("prioritizes the exact brand strength when the query includes a dose", () => {
+    const results = filterAndSortMatches(
+      [
+        { name: "Napa", strength: "120 mg/5 ml", generic: "Paracetamol", company: "Beximco Pharmaceuticals Ltd." },
+        { name: "Napa", strength: "500 mg", generic: "Paracetamol", company: "Beximco Pharmaceuticals Ltd." },
+        { name: "Napa", strength: "80 mg/ml", generic: "Paracetamol", company: "Beximco Pharmaceuticals Ltd." },
+      ],
+      "Napa 500",
+    );
+
+    expect(results[0]?.name).toBe("Napa");
+    expect(results[0]?.strength).toBe("500 mg");
+  });
+
+  it("keeps hyphenated brand names searchable without collapsing them into generic cap matches", () => {
+    const parts = getSearchParts("D-Cap");
+    const results = filterAndSortMatches(
+      [
+        { name: "Capdol", strength: "500 mg+65 mg", generic: "Paracetamol + Caffeine", company: "Beximco Pharmaceuticals Ltd." },
+        { name: "D-Cap", strength: "1000 IU", generic: "Cholecalciferol [Vitamin D3]", company: "Drug International Ltd." },
+        { name: "Androcap", strength: "40 mg", generic: "Testosterone Undecanoate", company: "Renata Ltd." },
+      ],
+      "D-Cap",
+    );
+
+    expect(parts.nameSearchTerms).toContain("D-Cap");
+    expect(results[0]?.name).toBe("D-Cap");
   });
 });
