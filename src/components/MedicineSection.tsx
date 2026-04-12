@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical, Loader2, Pencil, ChevronDown, ChevronUp } from "lucide-react";
+import TreatmentTemplateSelector from "./TreatmentTemplateSelector";
 import { useRef, useState } from "react";
 import { MedicineOptions } from "./MedicineSettings";
 import { useMedicineSearch } from "@/hooks/useMedicineSearch";
@@ -221,11 +222,12 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
 
   return (
     <div className="section-card p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <span className="text-xl font-serif italic text-primary">℞</span>
           Prescription
         </h3>
+        <TreatmentTemplateSelector medicines={medicines} onApplyTemplate={onChange} />
       </div>
 
       {medicines.length === 0 && (
