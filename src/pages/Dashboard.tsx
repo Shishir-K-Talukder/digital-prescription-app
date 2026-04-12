@@ -234,6 +234,32 @@ const Dashboard = () => {
             </div>
           </TabsContent>
 
+          {/* APPOINTMENTS TAB */}
+          <TabsContent value="appointments" className="mt-0">
+            <div className="section-card p-5">
+              <h3 className="section-header mb-4">
+                <div className="section-header-icon flex items-center justify-center">
+                  <ClipboardList className="w-3.5 h-3.5" />
+                </div>
+                Patient Appointments
+              </h3>
+              <AppointmentPanel />
+            </div>
+          </TabsContent>
+
+          {/* PATIENT RECORDS TAB */}
+          <TabsContent value="records" className="mt-0">
+            <div className="section-card p-5">
+              <h3 className="section-header mb-4">
+                <div className="section-header-icon flex items-center justify-center">
+                  <FolderOpen className="w-3.5 h-3.5" />
+                </div>
+                Patient Records
+              </h3>
+              <PatientRecordsPanel />
+            </div>
+          </TabsContent>
+
           {/* INCOME TAB */}
           <TabsContent value="income" className="mt-0 space-y-5">
             {/* Month selector */}
