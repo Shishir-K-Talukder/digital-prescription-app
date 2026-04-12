@@ -128,7 +128,7 @@ const Index = () => {
             {/* Clinical + Medicine side by side */}
             <div className="rx-page-grid">
               <div className="min-w-0">
-                <ClinicalSection data={clinical} onChange={setClinical} />
+                <ClinicalSection data={clinical} onChange={setClinical} options={medicineOptions} />
               </div>
               <div className="space-y-4 min-w-0">
                 <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
