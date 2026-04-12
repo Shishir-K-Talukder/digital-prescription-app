@@ -102,12 +102,32 @@ const PrintSetup = ({ settings, onChange }: Props) => {
             { key: "showOE", label: "O/E", id: "show-oe" },
             { key: "showDiagnosis", label: "D/X", id: "show-dx" },
             { key: "showInvestigation", label: "Investigation", id: "show-inv" },
+            { key: "showFooter", label: "Footer", id: "show-footer" },
           ].map(({ key, label, id }) => (
             <div key={key} className="flex items-center gap-2.5 bg-muted/30 rounded-lg px-3 py-2">
               <Switch checked={(settings as any)[key]} onCheckedChange={(v) => onChange({ ...settings, [key]: v })} id={id} />
               <Label htmlFor={id} className="text-xs text-foreground cursor-pointer">{label}</Label>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-border">
+        <Label className="text-[11px] text-muted-foreground font-semibold mb-3 block">Footer Customization</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Footer Height (mm)</Label>
+            <Input value={settings.footerHeight || ""} onChange={(e) => onChange({ ...settings, footerHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+          </div>
+          <div className="sm:col-span-2">
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Custom Footer Text</Label>
+            <textarea
+              value={settings.footerText || ""}
+              onChange={(e) => onChange({ ...settings, footerText: e.target.value })}
+              placeholder="Leave empty to use doctor info from profile"
+              className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+            />
+          </div>
         </div>
       </div>
     </div>

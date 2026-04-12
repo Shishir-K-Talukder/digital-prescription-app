@@ -19,6 +19,9 @@ export interface PrintSettings {
   showOE: boolean;
   showDiagnosis: boolean;
   showInvestigation: boolean;
+  showFooter: boolean;
+  footerHeight?: string;
+  footerText?: string;
 }
 
 export const defaultPrintSettings: PrintSettings = {
@@ -33,6 +36,9 @@ export const defaultPrintSettings: PrintSettings = {
   showOE: true,
   showDiagnosis: true,
   showInvestigation: true,
+  showFooter: true,
+  footerHeight: "",
+  footerText: "",
 };
 
 interface Props {
@@ -211,13 +217,22 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
         </div>
       </div>
 
-      {settings.showDoctorInfo && doctorHasInfo && (
-        <div className="mt-12 pt-4 border-t border-gray-300 flex justify-end">
+      {settings.showFooter && (
+        <div
+          className="mt-12 pt-4 border-t border-gray-300 flex justify-end"
+          style={settings.footerHeight ? { minHeight: `${settings.footerHeight}mm` } : {}}
+        >
           <div className="text-center text-xs">
             <div className="w-40 border-b border-black mb-1" />
-            <p className="font-bold">{doctor.name}</p>
-            {doctor.degrees && <p className="text-gray-500">{doctor.degrees}</p>}
-            {doctor.bmdcNo && <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>}
+            {settings.footerText ? (
+              <div className="whitespace-pre-wrap">{settings.footerText}</div>
+            ) : doctorHasInfo ? (
+              <>
+                <p className="font-bold">{doctor.name}</p>
+                {doctor.degrees && <p className="text-gray-500">{doctor.degrees}</p>}
+                {doctor.bmdcNo && <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>}
+              </>
+            ) : null}
           </div>
         </div>
       )}
