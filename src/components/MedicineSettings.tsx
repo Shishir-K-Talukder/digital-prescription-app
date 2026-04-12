@@ -100,6 +100,27 @@ const DEFAULT_OPTIONS: MedicineOptions = {
     "১৫ দিন পর", "১ মাস পর", "২ মাস পর", "৩ মাস পর",
     "রিপোর্ট নিয়ে আসবেন", "প্রয়োজনে আসবেন",
   ],
+  investigations: [
+    "CBC", "ESR", "CRP", "RBS", "FBS", "HbA1c",
+    "S. Creatinine", "S. Uric Acid", "S. Electrolyte",
+    "Lipid Profile", "LFT", "Thyroid Profile (FT4, TSH)",
+    "Urine R/M/E", "Urine C/S", "Stool R/M/E",
+    "X-Ray Chest P/A", "X-Ray L/S Spine B/V", "X-Ray KUB",
+    "USG of W/A", "USG of KUB", "Echo",
+    "ECG", "CT Scan", "MRI",
+    "Blood Grouping", "HBsAg", "Anti-HCV",
+    "Widal Test", "Blood C/S", "Sputum for AFB",
+    "Dengue NS1 Ag", "Dengue IgM/IgG",
+    "S. Bilirubin", "S. Albumin", "PT/INR",
+    "ANA", "Anti-dsDNA", "RA Factor",
+  ],
+  chiefComplaints: [
+    "Fever", "Cough", "Cold", "Headache", "Body ache",
+    "Sore throat", "Vomiting", "Diarrhoea", "Abdominal pain",
+    "Chest pain", "Breathlessness", "Weakness", "Dizziness",
+    "Burning micturition", "Skin rash", "Joint pain",
+    "Back pain", "Loss of appetite", "Weight loss",
+  ],
 };
 
 export const loadMedicineOptions = (): MedicineOptions => {

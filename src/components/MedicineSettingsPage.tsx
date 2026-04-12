@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers } from "lucide-react";
+import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers, ClipboardList, Search } from "lucide-react";
 import { MedicineOptions } from "@/components/MedicineSettings";
 
 interface ListEditorProps {
@@ -97,6 +97,8 @@ const MedicineSettingsPage = ({ options, onChange }: Props) => {
     { value: "meals", label: "Meal", icon: Utensils, content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
     { value: "advice", label: "Advice", icon: MessageSquare, content: <ListEditor items={options.adviceList} onChange={(v) => handleChange("adviceList", v)} placeholder="e.g. প্রচুর পানি পান করুন" /> },
     { value: "followup", label: "Follow-up", icon: CalendarDays, content: <ListEditor items={options.followUpOptions} onChange={(v) => handleChange("followUpOptions", v)} placeholder="e.g. ৭ দিন পর" /> },
+    { value: "investigations", label: "Investigation", icon: Search, content: <ListEditor items={options.investigations || []} onChange={(v) => handleChange("investigations", v)} placeholder="e.g. CBC, X-Ray Chest P/A" /> },
+    { value: "chiefComplaints", label: "C/C", icon: ClipboardList, content: <ListEditor items={options.chiefComplaints || []} onChange={(v) => handleChange("chiefComplaints", v)} placeholder="e.g. Fever, Headache" /> },
   ];
 
   return (
