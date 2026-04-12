@@ -124,15 +124,15 @@
   }
 
   .section-header {
-    @apply text-sm font-semibold text-foreground flex items-center gap-2;
+    @apply text-base font-semibold text-foreground flex items-center gap-2;
   }
 
   .section-header-icon {
-    @apply w-5 h-5 p-0.5 rounded-md bg-primary/10 text-primary;
+    @apply w-6 h-6 p-0.5 rounded-md bg-primary/10 text-primary;
   }
 
   .field-label {
-    @apply text-[11px] font-medium text-muted-foreground mb-1 block uppercase tracking-wider;
+    @apply text-xs font-medium text-muted-foreground mb-1 block uppercase tracking-wider;
   }
 
   .rx-page-grid {
