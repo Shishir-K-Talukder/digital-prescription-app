@@ -79,25 +79,51 @@ const detectExplicitType = (name: string, strength: string, generic = ""): strin
   const hasNameOrGenericToken = (...patterns: RegExp[]) =>
     hasToken(nameTokens, ...patterns) || hasToken(genericTokens, ...patterns);
 
+  // --- Inhalation forms (must come before capsule/tablet to avoid misdetection) ---
+  if (/\binhalation\b.*\bcapsule\b|\binhalation capsule\b/i.test(combined)) return "Inhaler";
+  if (/\binhaler\b|\bhaler\b|\binhalation\b|\binhalation aerosol\b/i.test(combined) || /\/puff|mcg\/dose/i.test(s)) return "Inhaler";
+  if (/\bnebuli[sz]er?\b|\brespules?\b|\brespirator\b|\bsolution for inhalation\b/i.test(combined)) return "Nebu";
+
+  // --- Topical / External ---
+  if (/\bvaginal cream\b/i.test(combined)) return "Cream";
+  if (/\bvaginal gel\b/i.test(combined)) return "Gel";
+  if (/\bvaginal pessary\b/i.test(combined)) return "Supp";
+  if (/\bvaginal tablet\b/i.test(combined)) return "Tab";
+  if (/\bvaginal\b/i.test(g)) return "Tab";
   if (/\bcream\b/i.test(combined) || hasNameOrGenericToken(/cream$/)) return "Cream";
-  if (/\bgel\b/i.test(combined) || hasNameOrGenericToken(/gel$/)) return "Gel";
+  if (/\bgel\b|\bjelly\b/i.test(combined) || hasNameOrGenericToken(/gel$/)) return "Gel";
   if (/\blotion\b/i.test(combined) || hasNameOrGenericToken(/lotion$/)) return "Lotion";
-  if (/\bointment\b|\boint\b/i.test(combined) || hasNameOrGenericToken(/ointment$/, /oint$/)) return "Oint";
+  if (/\beye ointment\b|\bointment\b|\boint\b/i.test(combined) || hasNameOrGenericToken(/ointment$/, /oint$/)) return "Oint";
   if (/\bshampoo\b/i.test(combined)) return "Shampoo";
-  if (/\bspray\b/i.test(combined)) return "Spray";
-  if (/\binhaler\b|\bhaler\b/i.test(combined) || /\/puff|mcg\/dose/i.test(s)) return "Inhaler";
-  if (/\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "Nebu";
-  if (/\bsuppository\b|\bsupp\b/i.test(combined) || hasNameOrGenericToken(/supp$/, /suppo$/)) return "Supp";
-  if (/\binjection\b|\binj\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
+  if (/\bnasal spray\b|\bspray\b/i.test(combined)) return "Spray";
+  if (/\bdental paste\b|\bpaste\b/i.test(combined)) return "Paste";
+  if (/\bnail lacquer\b/i.test(combined)) return "Lacquer";
+
+  // --- Injectable ---
+  if (/\binjection\b|\binj\b|\biv infusion\b|\bsc injection\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
+
+  // --- Suppository / Rectal ---
+  if (/\bsuppository\b|\bsupp\b|\brectal\b/i.test(combined) || hasNameOrGenericToken(/supp$/, /suppo$/)) return "Supp";
+
+  // --- Liquid / Oral solution ---
+  if (/\boral solution\b/i.test(combined)) return "Syr";
   if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|syrup preparation/i.test(combined) || (/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(s) && !/injection|iv|im/i.test(combined))) return "Syr";
-  if (/\bdrop\b|\bdrops\b|\bophthalmic\b|\botic\b|\bnasal\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+
+  // --- Drops (ophthalmic, otic, nasal, ear drop, eye/ear) ---
+  if (/\bdrop\b|\bdrops\b|\bophthalmic\b|\botic\b|\bnasal\b|\bear drop\b|\beye\/ear\b|\bophthalmic solution\b|\bnasal preparation\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+
+  // --- Topical (generic fallback) ---
   if (/topical/i.test(s) || /topical/i.test(g)) {
     if (/\blotion\b/i.test(n)) return "Lotion";
     if (/\bgel\b/i.test(n)) return "Gel";
     if (/\bointment\b|\boint\b/i.test(n)) return "Oint";
     return "Cream";
   }
+
+  // --- Oral solid ---
   if (/sachet/i.test(combined)) return "Sachet";
+  if (/\bmups\b/i.test(combined)) return "Tab";
+  if (/\bextended release\b|\bprolonged release\b/i.test(combined)) return "Tab";
   if (/\bcapsule\b|\bsoftgel\b/i.test(combined) || hasNameOrGenericToken(/caps?$/)) return "Cap";
   if (/\btablet\b|\btablets\b/i.test(combined) || hasNameOrGenericToken(/tabs?$/, /tablet$/)) return "Tab";
 
