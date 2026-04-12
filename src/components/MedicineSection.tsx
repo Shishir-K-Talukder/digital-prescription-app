@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical, Loader2, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import { useRef, useState } from "react";
-import MedicineSettings, { MedicineOptions } from "./MedicineSettings";
+import { MedicineOptions } from "./MedicineSettings";
 import { useMedicineSearch } from "@/hooks/useMedicineSearch";
 
 export interface TaperingDose {
