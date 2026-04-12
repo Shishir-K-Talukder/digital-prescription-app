@@ -88,6 +88,30 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  /* Senior-friendly: larger UI fonts, inputs, buttons (excluding print pages) */
+  :root {
+    --senior-base: 16px;
+  }
+
+  body:not(.print-page) {
+    font-size: var(--senior-base);
+  }
+
+  body:not(.print-page) input,
+  body:not(.print-page) textarea,
+  body:not(.print-page) select,
+  body:not(.print-page) .select-trigger {
+    font-size: 15px !important;
+  }
+
+  body:not(.print-page) button {
+    font-size: 14px;
+  }
+
+  body:not(.print-page) label {
+    font-size: 13px;
+  }
 }
 
 @layer components {
