@@ -73,9 +73,10 @@ const PrintPage = () => {
       <style>{`
         @media print {
           @page { size: ${pageCSS}; margin: 10mm; }
-          body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          body { margin: 0; padding: 0; background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .no-print { display: none !important; }
-          .print-preview { border: none !important; box-shadow: none !important; max-width: 100% !important; }
+          .print-preview { border: none !important; box-shadow: none !important; max-width: 100% !important; background: white !important; }
+          .print-preview * { box-shadow: none !important; }
         }
         @page { size: portrait; }
         body { background: #f5f5f5; }
