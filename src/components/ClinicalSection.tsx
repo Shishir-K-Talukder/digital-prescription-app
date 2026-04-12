@@ -342,6 +342,66 @@ const DrugHistoryMedicineSelector = ({ selectedMedicines, onChange }: { selected
   );
 };
 
+const InvestigationResultsTab = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [newItem, setNewItem] = useState("");
+
+  const currentItems = value
+    ? value.split("\n").map((s) => s.replace(/^•\s*/, "").trim()).filter(Boolean)
+    : [];
+
+  const updateResults = (items: string[]) => {
+    onChange(items.map((item) => `• ${item}`).join("\n"));
+  };
+
+  const addItem = () => {
+    const trimmed = newItem.trim();
+    if (trimmed) {
+      updateResults([...currentItems, trimmed]);
+      setNewItem("");
+    }
+  };
+
+  const removeItem = (idx: number) => {
+    updateResults(currentItems.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Display results as bullet points */}
+      {currentItems.length > 0 && (
+        <div className="p-3 bg-accent/20 rounded-lg border border-border/50 space-y-1.5">
+          {currentItems.map((item, idx) => (
+            <div key={idx} className="flex items-start justify-between group gap-2">
+              <span className="text-xs text-foreground leading-relaxed">• {item}</span>
+              <button
+                type="button"
+                onClick={() => removeItem(idx)}
+                className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-all shrink-0 mt-0.5"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input to add new result */}
+      <div className="flex gap-1.5">
+        <Input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
+          placeholder="e.g. HbA1c: 6.5%, CBC: Normal..."
+          className="h-8 text-xs flex-1"
+        />
+        <Button variant="outline" size="sm" className="h-8 text-xs gap-1 shrink-0" onClick={addItem} disabled={!newItem.trim()}>
+          <Plus className="w-3 h-3" /> Add
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const ClinicalSection = ({ data, onChange, options }: Props) => {
   const updateOE = (key: keyof OnExaminationData, value: string) => {
     onChange({ ...data, onExamination: { ...data.onExamination, [key]: value } });
