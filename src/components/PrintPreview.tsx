@@ -210,7 +210,7 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
                 <div className="mb-2"><p className="font-bold">Advice:</p><p className="whitespace-pre-wrap">{advice.advice}</p></div>
               )}
               {advice.followUpDate && (
-                <p><strong>ফলো-আপ:</strong> {formatFollowUpBangla(advice.followUpDate)}</p>
+                <p><strong>Follow Up:</strong> {formatFollowUpBangla(advice.followUpDate)}</p>
               )}
             </div>
           )}
