@@ -79,25 +79,51 @@ const detectExplicitType = (name: string, strength: string, generic = ""): strin
   const hasNameOrGenericToken = (...patterns: RegExp[]) =>
     hasToken(nameTokens, ...patterns) || hasToken(genericTokens, ...patterns);
 
+  // --- Inhalation forms (must come before capsule/tablet to avoid misdetection) ---
+  if (/\binhalation\b.*\bcapsule\b|\binhalation capsule\b/i.test(combined)) return "Inhaler";
+  if (/\binhaler\b|\bhaler\b|\binhalation\b|\binhalation aerosol\b/i.test(combined) || /\/puff|mcg\/dose/i.test(s)) return "Inhaler";
+  if (/\bnebuli[sz]er?\b|\brespules?\b|\brespirator\b|\bsolution for inhalation\b/i.test(combined)) return "Nebu";
+
+  // --- Topical / External ---
+  if (/\bvaginal cream\b/i.test(combined)) return "Cream";
+  if (/\bvaginal gel\b/i.test(combined)) return "Gel";
+  if (/\bvaginal pessary\b/i.test(combined)) return "Supp";
+  if (/\bvaginal tablet\b/i.test(combined)) return "Tab";
+  if (/\bvaginal\b/i.test(g)) return "Tab";
   if (/\bcream\b/i.test(combined) || hasNameOrGenericToken(/cream$/)) return "Cream";
-  if (/\bgel\b/i.test(combined) || hasNameOrGenericToken(/gel$/)) return "Gel";
+  if (/\bgel\b|\bjelly\b/i.test(combined) || hasNameOrGenericToken(/gel$/)) return "Gel";
   if (/\blotion\b/i.test(combined) || hasNameOrGenericToken(/lotion$/)) return "Lotion";
-  if (/\bointment\b|\boint\b/i.test(combined) || hasNameOrGenericToken(/ointment$/, /oint$/)) return "Oint";
+  if (/\beye ointment\b|\bointment\b|\boint\b/i.test(combined) || hasNameOrGenericToken(/ointment$/, /oint$/)) return "Oint";
   if (/\bshampoo\b/i.test(combined)) return "Shampoo";
-  if (/\bspray\b/i.test(combined)) return "Spray";
-  if (/\binhaler\b|\bhaler\b/i.test(combined) || /\/puff|mcg\/dose/i.test(s)) return "Inhaler";
-  if (/\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "Nebu";
-  if (/\bsuppository\b|\bsupp\b/i.test(combined) || hasNameOrGenericToken(/supp$/, /suppo$/)) return "Supp";
-  if (/\binjection\b|\binj\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
+  if (/\bnasal spray\b|\bspray\b/i.test(combined)) return "Spray";
+  if (/\bdental paste\b|\bpaste\b/i.test(combined)) return "Paste";
+  if (/\bnail lacquer\b/i.test(combined)) return "Lacquer";
+
+  // --- Injectable ---
+  if (/\binjection\b|\binj\b|\biv infusion\b|\bsc injection\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
+
+  // --- Suppository / Rectal ---
+  if (/\bsuppository\b|\bsupp\b|\brectal\b/i.test(combined) || hasNameOrGenericToken(/supp$/, /suppo$/)) return "Supp";
+
+  // --- Liquid / Oral solution ---
+  if (/\boral solution\b/i.test(combined)) return "Syr";
   if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|syrup preparation/i.test(combined) || (/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(s) && !/injection|iv|im/i.test(combined))) return "Syr";
-  if (/\bdrop\b|\bdrops\b|\bophthalmic\b|\botic\b|\bnasal\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+
+  // --- Drops (ophthalmic, otic, nasal, ear drop, eye/ear) ---
+  if (/\bdrop\b|\bdrops\b|\bophthalmic\b|\botic\b|\bnasal\b|\bear drop\b|\beye\/ear\b|\bophthalmic solution\b|\bnasal preparation\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+
+  // --- Topical (generic fallback) ---
   if (/topical/i.test(s) || /topical/i.test(g)) {
     if (/\blotion\b/i.test(n)) return "Lotion";
     if (/\bgel\b/i.test(n)) return "Gel";
     if (/\bointment\b|\boint\b/i.test(n)) return "Oint";
     return "Cream";
   }
+
+  // --- Oral solid ---
   if (/sachet/i.test(combined)) return "Sachet";
+  if (/\bmups\b/i.test(combined)) return "Tab";
+  if (/\bextended release\b|\bprolonged release\b/i.test(combined)) return "Tab";
   if (/\bcapsule\b|\bsoftgel\b/i.test(combined) || hasNameOrGenericToken(/caps?$/)) return "Cap";
   if (/\btablet\b|\btablets\b/i.test(combined) || hasNameOrGenericToken(/tabs?$/, /tablet$/)) return "Tab";
 
@@ -114,13 +140,13 @@ const FORMULATION_QUERY_TERMS = new Set([
   "cap", "caps", "capsule", "capsules",
   "syr", "syp", "syrup", "susp", "suspension",
   "drop", "drops",
-  "cream", "gel", "lotion", "ointment", "oint",
-  "shampoo", "spray",
-  "inj", "injection", "vial", "amp", "ampoule", "iv", "im",
-  "supp", "suppository", "suppositories",
-  "inhaler", "puff", "nebu", "neb", "nebulizer", "nebuliser",
-  "ophthalmic", "otic", "nasal",
-  "softgel",
+  "cream", "gel", "lotion", "ointment", "oint", "jelly", "paste",
+  "shampoo", "spray", "lacquer",
+  "inj", "injection", "vial", "amp", "ampoule", "iv", "im", "infusion",
+  "supp", "suppository", "suppositories", "rectal", "pessary",
+  "inhaler", "puff", "nebu", "neb", "nebulizer", "nebuliser", "inhalation", "respirator",
+  "ophthalmic", "otic", "nasal", "ear", "vaginal",
+  "softgel", "mups",
 ]);
 
 const STRENGTH_QUERY_TERMS = new Set([
@@ -163,7 +189,7 @@ const dedupeMedicines = (medicines: DbMedicine[]) => {
 };
 
 const getTypeGroup = (type: string): MedicineTypeGroup => {
-  if (["Cream", "Gel", "Lotion", "Oint", "Shampoo", "Spray"].includes(type)) return "topical";
+  if (["Cream", "Gel", "Lotion", "Oint", "Shampoo", "Spray", "Paste", "Lacquer"].includes(type)) return "topical";
   if (["Tab", "Cap"].includes(type)) return "oralUnitSolid";
   if (type === "Sachet") return "oralSachet";
   if (["Syr", "Drop"].includes(type)) return "oralLiquid";
@@ -234,13 +260,14 @@ const inferTypeGroup = (medicine: DbMedicine): MedicineTypeGroup => {
   const s = medicine.strength.toLowerCase();
   const combined = `${medicine.name} ${medicine.strength} ${medicine.generic}`.toLowerCase();
 
-  if (/\binjection\b|\binj\b|\/vial|\/ampoule|\/prefilled|\/syringe/i.test(combined)) return "injectable";
-  if (/\bcream\b|\bgel\b|\blotion\b|\bointment\b|\boint\b|\bshampoo\b|\bspray\b|\btopical\b/i.test(combined)) return "topical";
-  if (/\binhaler\b|\bhaler\b|\/puff|mcg\/dose|\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "inhaled";
-  if (/\bsuppository\b|\bsupp\b/i.test(combined)) return "suppository";
-  if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|\bophthalmic\b|\botic\b|\bnasal\b/i.test(combined)) return "oralLiquid";
+  if (/\binjection\b|\binj\b|\/vial|\/ampoule|\/prefilled|\/syringe|\biv infusion\b|\bsc injection\b/i.test(combined)) return "injectable";
+  if (/\bcream\b|\bgel\b|\bjelly\b|\blotion\b|\bointment\b|\boint\b|\bshampoo\b|\bspray\b|\btopical\b|\bnail lacquer\b|\bpaste\b|\bdental paste\b/i.test(combined)) return "topical";
+  if (/\binhaler\b|\bhaler\b|\/puff|mcg\/dose|\bnebuli[sz]er?\b|\brespules?\b|\binhalation\b|\brespirator\b|\bsolution for inhalation\b/i.test(combined)) return "inhaled";
+  if (/\bsuppository\b|\bsupp\b|\brectal\b|\bvaginal pessary\b/i.test(combined)) return "suppository";
+  if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|\bophthalmic\b|\botic\b|\bnasal\b|\bear drop\b|\beye\/ear\b|\boral solution\b|\bnasal preparation\b/i.test(combined)) return "oralLiquid";
   if ((/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(s) || /\/ml|mg\/ml/i.test(s)) && !/injection|iv|im|vial/i.test(combined)) return "oralLiquid";
   if (/sachet/i.test(combined)) return "oralSachet";
+  if (/\bmups\b|\bextended release\b|\bprolonged release\b/i.test(combined)) return "oralUnitSolid";
   if (/\d/.test(s) || /\bcapsule\b|\bsoftgel\b|\btablet\b|\btablets\b/i.test(combined)) return "oralUnitSolid";
   return "other";
 };
@@ -343,17 +370,19 @@ const detectFormulationHint = (query: string): FormulationHint | null => {
   if (/\bointment\b|\boint\b/.test(raw)) return { exactType: "Oint", group: "topical" };
   if (/\blotion\b/.test(raw)) return { exactType: "Lotion", group: "topical" };
   if (/\bcream\b/.test(raw)) return { exactType: "Cream", group: "topical" };
-  if (/\bgel\b/.test(raw)) return { exactType: "Gel", group: "topical" };
+  if (/\bgel\b|\bjelly\b/.test(raw)) return { exactType: "Gel", group: "topical" };
+  if (/\bpaste\b/.test(raw)) return { exactType: "Paste", group: "topical" };
+  if (/\blacquer\b/.test(raw)) return { exactType: "Lacquer", group: "topical" };
   if (/\bsachet\b/.test(raw)) return { exactType: "Sachet", group: "oralSachet" };
+  if (/\binhalation\b|\binhaler\b|\bpuff\b/.test(raw)) return { exactType: "Inhaler", group: "inhaled" };
+  if (/\bnebu\b|\bneb\b|\brespules?\b|\bnebulizer\b|\bnebuliser\b|\brespirator\b/.test(raw)) return { exactType: "Nebu", group: "inhaled" };
   if (/\bcapsule\b|\bcaps\b|\bcap\b|\bsoftgel\b/.test(raw)) return { exactType: "Cap", group: "oralUnitSolid" };
-  if (/\btablet\b|\btablets\b|\btab\b|\btabs\b/.test(raw)) return { exactType: "Tab", group: "oralUnitSolid" };
+  if (/\btablet\b|\btablets\b|\btab\b|\btabs\b|\bmups\b/.test(raw)) return { exactType: "Tab", group: "oralUnitSolid" };
   if (/\bsyrup\b|\bsuspension\b|\bsyr\b|\bsyp\b/.test(raw)) return { exactType: "Syr", group: "oralLiquid" };
   if (/\bdrop\b|\bdrops\b/.test(raw)) return { exactType: "Drop", group: "oralLiquid" };
-  if (/\binjection\b|\binj\b|\bvial\b|\bamp\b|\bampoule\b/.test(raw)) return { exactType: "Inj", group: "injectable" };
-  if (/\binhaler\b|\bpuff\b/.test(raw)) return { exactType: "Inhaler", group: "inhaled" };
-  if (/\bnebu\b|\bneb\b|\brespules?\b|\bnebulizer\b|\bnebuliser\b/.test(raw)) return { exactType: "Nebu", group: "inhaled" };
-  if (/\bsupp\b|\bsuppository\b/.test(raw)) return { exactType: "Supp", group: "suppository" };
-  if (/\bophthalmic\b|\botic\b|\bnasal\b/.test(raw)) return { exactType: "Drop", group: "oralLiquid" };
+  if (/\binjection\b|\binj\b|\bvial\b|\bamp\b|\bampoule\b|\binfusion\b/.test(raw)) return { exactType: "Inj", group: "injectable" };
+  if (/\bsupp\b|\bsuppository\b|\brectal\b|\bpessary\b/.test(raw)) return { exactType: "Supp", group: "suppository" };
+  if (/\bophthalmic\b|\botic\b|\bnasal\b|\bear\b/.test(raw)) return { exactType: "Drop", group: "oralLiquid" };
 
   return null;
 };
