@@ -111,8 +111,19 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
     ? `${settings.customHeaderWidth}mm`
     : undefined;
 
+  const pageWidthMm = settings.pageSize === "Custom" && settings.customWidth
+    ? parseInt(settings.customWidth)
+    : settings.pageSize === "A5" ? 148 : settings.pageSize === "Letter" ? 216 : 210;
+
+  // Convert mm to px (approx 3.78 px/mm) for on-screen preview
+  const previewWidthPx = Math.round(pageWidthMm * 3.78);
+
   return (
-    <div className="print-preview bg-white text-black p-8 max-w-[800px] mx-auto border border-border rounded-lg shadow-sm" id="prescription-print">
+    <div
+      className="print-preview bg-white text-black p-8 mx-auto border border-border rounded-lg shadow-sm"
+      id="prescription-print"
+      style={{ maxWidth: `${previewWidthPx}px` }}
+    >
       {settings.showDoctorInfo && (
         <div className="text-center border-b-2 border-black pb-3 mb-4 mx-auto" style={{ minHeight: headerHeight, ...(headerWidth ? { maxWidth: headerWidth } : {}) }}>
           {settings.showDoctorText && doctorHasInfo ? (
