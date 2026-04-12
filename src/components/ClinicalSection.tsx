@@ -492,6 +492,13 @@ const ClinicalSection = ({ data, onChange, options }: Props) => {
           />
         </TabsContent>
 
+        <TabsContent value="ix" className="mt-0">
+          <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Investigation Results (IX)</Label>
+          <InvestigationResultsTab
+            value={data.investigationResults || ""}
+            onChange={(v) => onChange({ ...data, investigationResults: v })}
+          />
+        </TabsContent>
         <TabsContent value="inv" className="mt-0">
           <Label className="text-xs text-muted-foreground mb-1.5 block font-medium">Investigation</Label>
           <InvestigationTab
