@@ -48,6 +48,7 @@ const saveToLS = <T,>(key: string, data: T[]) => {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
