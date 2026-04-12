@@ -378,7 +378,7 @@ const ClinicalSection = ({ data, onChange, options }: Props) => {
       </h3>
 
       <Tabs defaultValue="cc" className="w-full">
-        <TabsList className="mb-4 w-full grid grid-cols-5 h-10 bg-muted/60 p-1 rounded-lg">
+        <TabsList className="mb-4 w-full grid grid-cols-6 h-10 bg-muted/60 p-1 rounded-lg">
           <TabsTrigger value="cc" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
             C/C
           </TabsTrigger>
@@ -393,6 +393,9 @@ const ClinicalSection = ({ data, onChange, options }: Props) => {
           </TabsTrigger>
           <TabsTrigger value="inv" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
             Inv
+          </TabsTrigger>
+          <TabsTrigger value="ix" className="text-xs font-semibold rounded-md data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+            IX
           </TabsTrigger>
         </TabsList>
 
