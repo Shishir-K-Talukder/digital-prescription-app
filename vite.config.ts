@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/Prescription-App/",
+  base: "/rx-bengal-bliss-b34166d2/",
   server: {
     host: "::",
     port: 8080,
