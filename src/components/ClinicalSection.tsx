@@ -23,6 +23,7 @@ export interface ClinicalData {
   drugHistoryMedicines?: string[];
   diagnosis: string;
   investigation: string;
+  investigationResults?: string;
 }
 
 export const defaultOnExamination: OnExaminationData = {
