@@ -163,20 +163,22 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
               </div>
             </div>
           )}
-          {clinical.drugHistory && (
+          {(clinical.drugHistory || (clinical as any).drugHistoryMedicines?.length > 0) && (
             <div>
               <p className="font-bold underline">D/H</p>
-              <p className="whitespace-pre-wrap mt-1">{clinical.drugHistory}</p>
-            </div>
-          )}
-          {(clinical as any).drugHistoryMedicines?.length > 0 && (
-            <div className={clinical.drugHistory ? "mt-1" : ""}>
-              {!clinical.drugHistory && <p className="font-bold underline">D/H</p>}
-              <ul className="mt-1 list-disc list-inside space-y-0.5">
-                {(clinical as any).drugHistoryMedicines.map((med: string, i: number) => (
-                  <li key={i}>{med}</li>
-                ))}
-              </ul>
+              {clinical.drugHistory && (
+                <p className="whitespace-pre-wrap mt-1">{clinical.drugHistory}</p>
+              )}
+              {(clinical as any).drugHistoryMedicines?.length > 0 && (
+                <ul className="mt-1 space-y-0.5 list-none pl-0">
+                  {(clinical as any).drugHistoryMedicines.map((med: string, i: number) => (
+                    <li key={i} className="flex items-start gap-1">
+                      <span className="mt-0.5">•</span>
+                      <span>{med}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
           {settings.showDiagnosis && clinical.diagnosis && (
