@@ -5,20 +5,26 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useAppointments, Appointment } from "@/hooks/useAppointments";
-import { CalendarDays, Plus, Trash2, CheckCircle, XCircle, Clock, Search, Phone, User } from "lucide-react";
+import { CalendarDays, Plus, Trash2, CheckCircle, XCircle, Clock, Search, Phone, User, Stethoscope } from "lucide-react";
 import { format, isToday, isTomorrow, isPast, parseISO } from "date-fns";
 
 const statusColors: Record<string, string> = {
-  scheduled: "bg-blue-100 text-blue-700 border-blue-200",
-  completed: "bg-green-100 text-green-700 border-green-200",
-  cancelled: "bg-red-100 text-red-700 border-red-200",
+  scheduled: "bg-primary/10 text-primary border-primary/20",
+  completed: "bg-accent text-accent-foreground border-accent",
+  cancelled: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
-const AppointmentPanel = () => {
+interface Props {
+  onStartRx?: (patient: { name: string; age: string; sex: string; mobile: string }) => void;
+}
+
+const AppointmentPanel = ({ onStartRx }: Props) => {
   const { appointments, loading, addAppointment, updateAppointmentStatus, deleteAppointment } = useAppointments();
 
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [sex, setSex] = useState("");
   const [mobile, setMobile] = useState("");
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [time, setTime] = useState("10:00");
@@ -41,8 +47,11 @@ const AppointmentPanel = () => {
 
   const handleAdd = async () => {
     if (!name.trim() || !date || !time) return;
-    await addAppointment({ patient_name: name.trim(), patient_mobile: mobile.trim(), appointment_date: date, appointment_time: time, notes: notes.trim() });
-    setName(""); setMobile(""); setNotes(""); setShowForm(false);
+    await addAppointment({
+      patient_name: name.trim(), patient_age: age.trim(), patient_sex: sex,
+      patient_mobile: mobile.trim(), appointment_date: date, appointment_time: time, notes: notes.trim(),
+    });
+    setName(""); setAge(""); setSex(""); setMobile(""); setNotes(""); setShowForm(false);
   };
 
   const getDateLabel = (dateStr: string) => {
@@ -106,6 +115,21 @@ const AppointmentPanel = () => {
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Patient name" className="h-9 text-sm" />
             </div>
             <div>
+              <Label className="text-[11px] text-muted-foreground">Age</Label>
+              <Input value={age} onChange={(e) => setAge(e.target.value)} placeholder="e.g. 35" className="h-9 text-sm" />
+            </div>
+            <div>
+              <Label className="text-[11px] text-muted-foreground">Sex</Label>
+              <Select value={sex} onValueChange={setSex}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label className="text-[11px] text-muted-foreground">Mobile</Label>
               <Input value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="Mobile number" className="h-9 text-sm" />
             </div>
@@ -147,6 +171,8 @@ const AppointmentPanel = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <User className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="font-medium text-sm text-foreground truncate">{appt.patient_name}</span>
+                    {appt.patient_age && <span className="text-xs text-muted-foreground">{appt.patient_age}y</span>}
+                    {appt.patient_sex && <span className="text-xs text-muted-foreground">/ {appt.patient_sex}</span>}
                     <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${statusColors[appt.status]}`}>
                       {appt.status}
                     </Badge>
@@ -165,6 +191,17 @@ const AppointmentPanel = () => {
                   {appt.notes && <p className="text-xs text-muted-foreground mt-1 italic">{appt.notes}</p>}
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  {appt.status === "scheduled" && onStartRx && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-[10px] gap-1 px-2"
+                      onClick={() => onStartRx({ name: appt.patient_name, age: appt.patient_age, sex: appt.patient_sex, mobile: appt.patient_mobile })}
+                      title="Write Rx for this patient"
+                    >
+                      <Stethoscope className="w-3 h-3" /> Rx
+                    </Button>
+                  )}
                   {appt.status === "scheduled" && (
                     <>
                       <Button size="icon" variant="ghost" className="h-7 w-7 text-primary hover:bg-primary/10" onClick={() => updateAppointmentStatus(appt.id, "completed")} title="Mark completed">

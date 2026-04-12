@@ -8,6 +8,8 @@ export interface Appointment {
   user_id: string;
   patient_id: string | null;
   patient_name: string;
+  patient_age: string;
+  patient_sex: string;
   patient_mobile: string;
   appointment_date: string;
   appointment_time: string;
@@ -40,12 +42,12 @@ export const useAppointments = () => {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+  useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
   const addAppointment = async (appt: {
     patient_name: string;
+    patient_age: string;
+    patient_sex: string;
     patient_mobile: string;
     appointment_date: string;
     appointment_time: string;
@@ -56,6 +58,8 @@ export const useAppointments = () => {
     const { error } = await supabase.from("appointments").insert({
       user_id: user.id,
       patient_name: appt.patient_name,
+      patient_age: appt.patient_age,
+      patient_sex: appt.patient_sex,
       patient_mobile: appt.patient_mobile,
       appointment_date: appt.appointment_date,
       appointment_time: appt.appointment_time,
@@ -73,27 +77,13 @@ export const useAppointments = () => {
   };
 
   const updateAppointmentStatus = async (id: string, status: "scheduled" | "completed" | "cancelled") => {
-    const { error } = await supabase
-      .from("appointments")
-      .update({ status } as any)
-      .eq("id", id);
-
-    if (error) {
-      toast.error("Failed to update appointment");
-    } else {
-      toast.success(`Appointment ${status}`);
-      fetchAppointments();
-    }
+    const { error } = await supabase.from("appointments").update({ status } as any).eq("id", id);
+    if (error) { toast.error("Failed to update"); } else { toast.success(`Appointment ${status}`); fetchAppointments(); }
   };
 
   const deleteAppointment = async (id: string) => {
     const { error } = await supabase.from("appointments").delete().eq("id", id);
-    if (error) {
-      toast.error("Failed to delete appointment");
-    } else {
-      toast.success("Appointment deleted");
-      fetchAppointments();
-    }
+    if (error) { toast.error("Failed to delete"); } else { toast.success("Appointment deleted"); fetchAppointments(); }
   };
 
   return { appointments, loading, addAppointment, updateAppointmentStatus, deleteAppointment, refetch: fetchAppointments };
