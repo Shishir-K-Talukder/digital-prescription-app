@@ -243,7 +243,11 @@ const Dashboard = () => {
                 </div>
                 Patient Appointments
               </h3>
-              <AppointmentPanel />
+              <AppointmentPanel onStartRx={(patient) => {
+                // Store patient info and navigate to Rx write page
+                sessionStorage.setItem("appointment-patient", JSON.stringify(patient));
+                navigate("/");
+              }} />
             </div>
           </TabsContent>
 
