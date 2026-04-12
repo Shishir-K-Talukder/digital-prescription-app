@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Plus, X } from "lucide-react";
+import { ClipboardList, Plus, X, Pill } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { MedicineOptions } from "@/components/MedicineSettings";
+import { useMedicineSearch, MedicineSuggestion } from "@/hooks/useMedicineSearch";
 
 export interface OnExaminationData {
   bp: string; weight: string; temp: string; pulse: string; heart: string; lungs: string; abd: string;
