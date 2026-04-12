@@ -9,8 +9,6 @@ import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/component
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview from "@/components/PrintPreview";
-import InsulinDoseCalculator from "@/components/InsulinDoseCalculator";
-import PediatricDoseCalculator from "@/components/PediatricDoseCalculator";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
 import PatientDocuments from "@/components/PatientDocuments";
 import { useAuth } from "@/contexts/AuthContext";
@@ -95,17 +93,6 @@ const Index = () => {
     savePrescription(patient, clinical, medicines, advice);
   };
 
-  const handleAddCalculatedMedicine = (medicine: Omit<Medicine, "id">) => {
-    setMedicines((prev) => [
-      ...prev,
-      {
-        ...medicine,
-        id: crypto.randomUUID(),
-        taperingDoses: medicine.taperingDoses || [],
-      },
-    ]);
-    setActiveTab("write");
-  };
 
   const handleLoadPrescription = (rx: PrescriptionRecord) => {
     setPatient({ ...rx.patient_data, date: today });
@@ -171,8 +158,6 @@ const Index = () => {
               </div>
               <div className="space-y-4 min-w-0">
                 <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
-                <InsulinDoseCalculator />
-                <PediatricDoseCalculator options={medicineOptions} onAddMedicine={handleAddCalculatedMedicine} />
               </div>
             </div>
 
