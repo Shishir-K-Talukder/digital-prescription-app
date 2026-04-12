@@ -13,32 +13,31 @@ const detectType = (name: string, strength: string): string => {
   const n = name.toLowerCase();
   const s = strength.toLowerCase();
   const combined = `${n} ${s}`;
+  const nameTokens = n.split(/[^a-z0-9]+/).filter(Boolean);
+  const hasNameToken = (...patterns: RegExp[]) =>
+    nameTokens.some((token) => patterns.some((pattern) => pattern.test(token)));
 
-  // Check name for explicit formulation keywords first
-  if (/\bcream\b/i.test(n)) return "Cream";
-  if (/\bgel\b/i.test(n)) return "Gel";
-  if (/\blotion\b/i.test(n)) return "Lotion";
-  if (/\bointment\b|\boint\b/i.test(n)) return "Oint";
-  if (/\bshampoo\b/i.test(n)) return "Shampoo";
-  if (/\bspray\b/i.test(n)) return "Spray";
-  if (/\binhaler\b|\bhaler\b/i.test(combined)) return "Inhaler";
-  if (/\bnebuli[sz]/i.test(combined)) return "Nebu";
-  if (/\beye\s*drop\b|\bear\s*drop\b|\bnasal\s*drop\b|\bdrop\b/i.test(n)) return "Drop";
-  if (/\bsuppository\b|\bsupp\b/i.test(combined)) return "Supp";
-  if (/\binjection\b|\binj\b/i.test(n)) return "Inj";
+  if (/\bcream\b/i.test(combined) || hasNameToken(/cream$/)) return "Cream";
+  if (/\bgel\b/i.test(combined) || hasNameToken(/gel$/)) return "Gel";
+  if (/\blotion\b/i.test(combined) || hasNameToken(/lotion$/)) return "Lotion";
+  if (/\bointment\b|\boint\b/i.test(combined) || hasNameToken(/ointment$/, /oint$/)) return "Oint";
+  if (/\bshampoo\b/i.test(combined)) return "Shampoo";
+  if (/\bspray\b/i.test(combined)) return "Spray";
+  if (/\binhaler\b|\bhaler\b/i.test(combined) || /\/puff|mcg\/dose/i.test(s)) return "Inhaler";
+  if (/\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "Nebu";
+  if (/\bsuppository\b|\bsupp\b/i.test(combined) || hasNameToken(/supp$/, /suppo$/)) return "Supp";
+  if (/\binjection\b|\binj\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
+  if (/\bsuspension\b|\bsyrup\b|\bsyr\b|\bsyp\b|syrup preparation/i.test(combined) || (/\/5\s*ml|\/10\s*ml/i.test(s) && !/injection|iv|im/i.test(combined))) return "Syr";
+  if (/\bdrop\b|\bdrops\b/i.test(combined) || hasNameToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+  if (/topical/i.test(s)) {
+    if (/\blotion\b/i.test(n)) return "Lotion";
+    if (/\bgel\b/i.test(n)) return "Gel";
+    if (/\bointment\b|\boint\b/i.test(n)) return "Oint";
+    return "Cream";
+  }
+  if (/sachet/i.test(combined)) return "Sachet";
+  if (/\bcapsule\b/i.test(combined) || hasNameToken(/caps?$/)) return "Cap";
 
-  // Check strength patterns
-  if (/\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
-  if (/\/puff|mcg\/dose/i.test(s)) return "Inhaler";
-  if (/\/5\s*ml|\/10\s*ml|syrup/i.test(combined) && !/injection|iv|im/i.test(combined)) return "Syr";
-  if (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined)) return "Drop";
-  if (/topical/i.test(s)) return "Cream";
-  if (/sachet/i.test(s)) return "Sachet";
-
-  // Capsule detection — but avoid false positives from names containing "cap" as part of brand
-  if (/\bcapsule\b/i.test(combined)) return "Cap";
-
-  // Default tablet
   return "Tab";
 };
 
@@ -49,17 +48,73 @@ interface DbMedicine {
   company: string;
 }
 
-const sanitizeQuery = (query: string) => query.trim().replace(/[,%()']/g, " ").replace(/\s+/g, " ").trim();
+const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 
-const getMatchRank = (medicine: Pick<DbMedicine, "name" | "generic">, query: string) => {
-  const name = medicine.name.toLowerCase();
-  const generic = medicine.generic.toLowerCase();
+const sanitizeQuery = (query: string) => normalizeText(query);
 
-  if (name.startsWith(query)) return 0;
-  if (generic.startsWith(query)) return 1;
-  if (name.includes(query)) return 2;
-  if (generic.includes(query)) return 3;
-  return 4;
+const FORMULATION_QUERY_TERMS = new Set([
+  "tab", "tabs", "tablet", "tablets",
+  "cap", "caps", "capsule", "capsules",
+  "syr", "syp", "syrup", "susp", "suspension",
+  "drop", "drops",
+  "cream", "gel", "lotion", "ointment", "oint",
+  "shampoo", "spray",
+  "inj", "injection", "vial", "amp", "ampoule", "iv", "im",
+  "supp", "suppository", "suppositories",
+  "inhaler", "puff", "nebu", "neb", "nebulizer", "nebuliser",
+]);
+
+const getSearchParts = (query: string) => {
+  const raw = sanitizeQuery(query);
+  const rawTokens = raw.split(" ").filter(Boolean);
+  const filteredTokens = rawTokens.filter((token) => !FORMULATION_QUERY_TERMS.has(token));
+  const tokens = filteredTokens.length > 0 ? filteredTokens : rawTokens;
+  const searchText = tokens.join(" ");
+  const primaryToken = [...tokens].sort((a, b) => b.length - a.length)[0] || raw;
+
+  return { searchText, tokens, primaryToken };
+};
+
+const buildSearchableText = (medicine: DbMedicine) => normalizeText(`${medicine.name} ${medicine.generic} ${medicine.strength}`);
+
+const matchesTokens = (value: string, tokens: string[]) => tokens.every((token) => value.includes(token));
+
+const getMatchRank = (medicine: DbMedicine, searchText: string, tokens: string[]) => {
+  const name = normalizeText(medicine.name);
+  const generic = normalizeText(medicine.generic);
+  const searchable = buildSearchableText(medicine);
+
+  if (searchText && name === searchText) return 0;
+  if (searchText && generic === searchText) return 1;
+  if (searchText && name.startsWith(searchText)) return 2;
+  if (searchText && generic.startsWith(searchText)) return 3;
+  if (tokens.length > 1 && matchesTokens(name, tokens)) return 4;
+  if (tokens.length > 1 && matchesTokens(generic, tokens)) return 5;
+  if (searchText && searchable.includes(searchText)) return 6;
+  if (tokens.length > 0 && matchesTokens(searchable, tokens)) return 7;
+  return 8;
+};
+
+const filterAndSortMatches = (medicines: DbMedicine[], query: string) => {
+  const { searchText, tokens } = getSearchParts(query);
+
+  return medicines
+    .filter((medicine) => {
+      const searchable = buildSearchableText(medicine);
+      if (searchText && searchable.includes(searchText)) return true;
+      return tokens.length > 0 && matchesTokens(searchable, tokens);
+    })
+    .sort((a, b) => {
+      const rankDiff = getMatchRank(a, searchText, tokens) - getMatchRank(b, searchText, tokens);
+      if (rankDiff !== 0) return rankDiff;
+
+      const aNameDistance = Math.abs(normalizeText(a.name).length - searchText.length);
+      const bNameDistance = Math.abs(normalizeText(b.name).length - searchText.length);
+      if (aNameDistance !== bNameDistance) return aNameDistance - bNameDistance;
+
+      return 0;
+    })
+    .slice(0, 20);
 };
 
 const toSuggestion = (medicine: DbMedicine): MedicineSuggestion => ({
@@ -88,42 +143,24 @@ const loadFallback = (): Promise<DbMedicine[]> => {
 };
 
 const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
-  const sanitizedQuery = sanitizeQuery(query);
-  if (!sanitizedQuery) return [];
+  const { primaryToken } = getSearchParts(query);
+  if (!primaryToken) return [];
 
-  // Try database first
+  const refineMatches = (medicines: DbMedicine[]) => filterAndSortMatches(medicines, query).map(toSuggestion);
+
   const { data, error } = await supabase
     .from("medicines")
     .select("name, strength, generic, company")
-    .or(`name.ilike.%${sanitizedQuery}%,generic.ilike.%${sanitizedQuery}%`)
-    .limit(30);
+    .or(`name.ilike.%${primaryToken}%,generic.ilike.%${primaryToken}%,strength.ilike.%${primaryToken}%`)
+    .limit(60);
 
-  if (error || !data || data.length === 0) {
-    // Fallback to static JSON
-    const fallback = await loadFallback();
-    const q = sanitizedQuery.toLowerCase();
-    const matches: DbMedicine[] = [];
-    for (const med of fallback) {
-      const matchesName = med.name.toLowerCase().includes(q);
-      const matchesGeneric = med.generic.toLowerCase().includes(q);
-      if (matchesName || matchesGeneric) {
-        matches.push(med);
-      }
-      if (matches.length >= 40) break;
-    }
-    return matches
-      .sort((a, b) => getMatchRank(a, q) - getMatchRank(b, q))
-      .slice(0, 20)
-      .map(toSuggestion);
+  if (!error && data && data.length > 0) {
+    const refined = refineMatches(data as unknown as DbMedicine[]);
+    if (refined.length > 0) return refined;
   }
 
-  // Sort: name starts-with first, then generic starts-with, then contains
-  const q = sanitizedQuery.toLowerCase();
-  const sorted = (data as unknown as DbMedicine[]).sort((a, b) => {
-    return getMatchRank(a, q) - getMatchRank(b, q);
-  });
-
-  return sorted.map(toSuggestion);
+  const fallback = await loadFallback();
+  return refineMatches(fallback);
 };
 
 export const useMedicineSearch = (query: string) => {
