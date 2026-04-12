@@ -130,8 +130,8 @@ const detectExplicitType = (name: string, strength: string, generic = ""): strin
   if (/sachet/i.test(combined)) return "Sachet";
   if (/\bmups\b/i.test(combined)) return "Tab";
   if (/\bextended release\b|\bprolonged release\b/i.test(combined)) return "Tab";
-  if (/\bcapsule\b|\bsoftgel\b/i.test(combined) || hasNameOrGenericToken(/caps?$/)) return "Cap";
-  if (/\btablet\b|\btablets\b/i.test(combined) || hasNameOrGenericToken(/tabs?$/, /tablet$/)) return "Tab";
+  if (/\bcapsule\b|\bsoftgel\b/i.test(combined) || hasGenericToken(/caps?$/)) return "Cap";
+  if (/\btablet\b|\btablets\b/i.test(combined) || hasGenericToken(/tabs?$/, /tablet$/)) return "Tab";
 
   return null;
 };
