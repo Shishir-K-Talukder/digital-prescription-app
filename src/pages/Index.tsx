@@ -95,6 +95,18 @@ const Index = () => {
     savePrescription(patient, clinical, medicines, advice);
   };
 
+  const handleAddCalculatedMedicine = (medicine: Omit<Medicine, "id">) => {
+    setMedicines((prev) => [
+      ...prev,
+      {
+        ...medicine,
+        id: crypto.randomUUID(),
+        taperingDoses: medicine.taperingDoses || [],
+      },
+    ]);
+    setActiveTab("write");
+  };
+
   const handleLoadPrescription = (rx: PrescriptionRecord) => {
     setPatient({ ...rx.patient_data, date: today });
     setClinical(rx.clinical_data);
@@ -160,7 +172,7 @@ const Index = () => {
               <div className="space-y-4 min-w-0">
                 <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
                 <InsulinDoseCalculator />
-                <PediatricDoseCalculator />
+                <PediatricDoseCalculator options={medicineOptions} onAddMedicine={handleAddCalculatedMedicine} />
               </div>
             </div>
 

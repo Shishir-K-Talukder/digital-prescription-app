@@ -32,7 +32,17 @@ export const useDoctorSettings = () => {
         const stored = data.medicine_options as Record<string, unknown>;
         // Only keep user customizations like types and followUpOptions; use fresh defaults for doses/durations/meals/adviceList
         const defaults = loadMedicineOptions();
-        setMedicineOptions({ ...defaults, ...stored, doses: defaults.doses, durations: defaults.durations, meals: defaults.meals, adviceList: defaults.adviceList, investigations: stored.investigations || defaults.investigations, chiefComplaints: stored.chiefComplaints || defaults.chiefComplaints } as MedicineOptions);
+        setMedicineOptions({
+          ...defaults,
+          ...stored,
+          doses: defaults.doses,
+          durations: defaults.durations,
+          meals: defaults.meals,
+          adviceList: defaults.adviceList,
+          investigations: Array.isArray(stored.investigations) ? stored.investigations as string[] : defaults.investigations,
+          chiefComplaints: Array.isArray(stored.chiefComplaints) ? stored.chiefComplaints as string[] : defaults.chiefComplaints,
+          pediatricRules: Array.isArray(stored.pediatricRules) ? stored.pediatricRules as MedicineOptions["pediatricRules"] : defaults.pediatricRules,
+        } as MedicineOptions);
       }
     }
     setLoading(false);
