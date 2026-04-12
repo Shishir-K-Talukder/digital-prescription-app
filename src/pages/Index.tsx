@@ -52,6 +52,24 @@ const Index = () => {
     }
   }, [profileLoading, profile]);
 
+  // Pre-fill patient info from appointment
+  useEffect(() => {
+    const stored = sessionStorage.getItem("appointment-patient");
+    if (stored) {
+      try {
+        const apptPatient = JSON.parse(stored);
+        setPatient((prev) => ({
+          ...prev,
+          name: apptPatient.name || "",
+          age: apptPatient.age || "",
+          sex: apptPatient.sex || "",
+          mobile: apptPatient.mobile || "",
+        }));
+      } catch {}
+      sessionStorage.removeItem("appointment-patient");
+    }
+  }, []);
+
   const handleDoctorChange = (d: DoctorInfo) => {
     setDoctor(d);
     saveProfile(d);

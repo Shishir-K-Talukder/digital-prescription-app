@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ const saveToLS = <T,>(key: string, data: T[]) => {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const { printSettings, savePrintSettings, medicineOptions, saveMedicineOptions, loading: settingsLoading } = useDoctorSettings();
@@ -243,7 +245,11 @@ const Dashboard = () => {
                 </div>
                 Patient Appointments
               </h3>
-              <AppointmentPanel />
+              <AppointmentPanel onStartRx={(patient) => {
+                // Store patient info and navigate to Rx write page
+                sessionStorage.setItem("appointment-patient", JSON.stringify(patient));
+                navigate("/");
+              }} />
             </div>
           </TabsContent>
 
