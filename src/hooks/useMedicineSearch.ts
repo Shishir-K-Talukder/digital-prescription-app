@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface MedicineSuggestion {
   name: string;
@@ -20,61 +21,69 @@ const detectType = (strength: string): string => {
   return "Tab";
 };
 
-interface RawMedicine {
-  n: string;
-  s: string;
-  g: string;
-  c: string;
-  _lower?: string; // cached lowercase name
+interface DbMedicine {
+  name: string;
+  strength: string;
+  generic: string;
+  company: string;
 }
 
-let cachedData: RawMedicine[] | null = null;
-let loadingPromise: Promise<RawMedicine[]> | null = null;
+// Fallback: load from static JSON if DB is empty
+let fallbackData: DbMedicine[] | null = null;
+let fallbackPromise: Promise<DbMedicine[]> | null = null;
 
-const loadMedicines = (): Promise<RawMedicine[]> => {
-  if (cachedData) return Promise.resolve(cachedData);
-  if (loadingPromise) return loadingPromise;
-
-  loadingPromise = fetch(import.meta.env.BASE_URL + "medicines.json")
+const loadFallback = (): Promise<DbMedicine[]> => {
+  if (fallbackData) return Promise.resolve(fallbackData);
+  if (fallbackPromise) return fallbackPromise;
+  fallbackPromise = fetch(import.meta.env.BASE_URL + "medicines.json")
     .then((r) => r.json())
-    .then((data: RawMedicine[]) => {
-      // Pre-compute lowercase names for faster search
-      for (const med of data) {
-        med._lower = med.n.toLowerCase();
-      }
-      cachedData = data;
-      return data;
-    });
-
-  return loadingPromise;
+    .then((data: { n: string; s: string; g: string; c: string }[]) => {
+      fallbackData = data.map((m) => ({ name: m.n, strength: m.s, generic: m.g, company: m.c }));
+      return fallbackData;
+    })
+    .catch(() => []);
+  return fallbackPromise;
 };
 
-// Preload on module import so data is ready when user starts typing
-loadMedicines();
+const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
+  // Try database first
+  const { data, error } = await supabase
+    .from("medicines")
+    .select("name, strength, generic, company")
+    .ilike("name", `%${query}%`)
+    .limit(20);
 
-const searchMedicines = (data: RawMedicine[], query: string): MedicineSuggestion[] => {
-  const q = query.toLowerCase();
-  const startsWithResults: MedicineSuggestion[] = [];
-  const containsResults: MedicineSuggestion[] = [];
-
-  for (const med of data) {
-    if (startsWithResults.length + containsResults.length >= 20) break;
-
-    const lower = med._lower || med.n.toLowerCase();
-    if (lower.startsWith(q)) {
-      startsWithResults.push({
-        name: med.n, strength: med.s, generic: med.g,
-        company: med.c, detectedType: detectType(med.s),
-      });
-    } else if (lower.includes(q)) {
-      containsResults.push({
-        name: med.n, strength: med.s, generic: med.g,
-        company: med.c, detectedType: detectType(med.s),
-      });
+  if (error || !data || data.length === 0) {
+    // Fallback to static JSON
+    const fallback = await loadFallback();
+    const q = query.toLowerCase();
+    const starts: MedicineSuggestion[] = [];
+    const contains: MedicineSuggestion[] = [];
+    for (const med of fallback) {
+      if (starts.length + contains.length >= 20) break;
+      const lower = med.name.toLowerCase();
+      const suggestion: MedicineSuggestion = {
+        name: med.name, strength: med.strength, generic: med.generic,
+        company: med.company, detectedType: detectType(med.strength),
+      };
+      if (lower.startsWith(q)) starts.push(suggestion);
+      else if (lower.includes(q)) contains.push(suggestion);
     }
+    return [...starts, ...contains].slice(0, 20);
   }
 
-  return [...startsWithResults, ...containsResults].slice(0, 20);
+  // Sort: starts-with first, then contains
+  const q = query.toLowerCase();
+  const sorted = (data as unknown as DbMedicine[]).sort((a, b) => {
+    const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+    const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
+    return aStarts - bStarts;
+  });
+
+  return sorted.map((m) => ({
+    name: m.name, strength: m.strength, generic: m.generic,
+    company: m.company, detectedType: detectType(m.strength),
+  }));
 };
 
 export const useMedicineSearch = (query: string) => {
@@ -92,11 +101,10 @@ export const useMedicineSearch = (query: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(async () => {
-      const data = await loadMedicines();
-      const results = searchMedicines(data, query);
+      const results = await searchFromDb(query);
       setSuggestions(results);
       setLoading(false);
-    }, 100);
+    }, 150);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
