@@ -189,7 +189,7 @@ const dedupeMedicines = (medicines: DbMedicine[]) => {
 };
 
 const getTypeGroup = (type: string): MedicineTypeGroup => {
-  if (["Cream", "Gel", "Lotion", "Oint", "Shampoo", "Spray"].includes(type)) return "topical";
+  if (["Cream", "Gel", "Lotion", "Oint", "Shampoo", "Spray", "Paste", "Lacquer"].includes(type)) return "topical";
   if (["Tab", "Cap"].includes(type)) return "oralUnitSolid";
   if (type === "Sachet") return "oralSachet";
   if (["Syr", "Drop"].includes(type)) return "oralLiquid";
