@@ -133,7 +133,7 @@ const Index = () => {
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 mt-2">
             <TabsList className="bg-card border border-border/60 shadow-sm h-12 p-1 rounded-xl">
               <TabsTrigger value="write" className="gap-2 text-sm font-medium rounded-lg px-5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
                 <Stethoscope className="w-4 h-4" /> Write Rx
