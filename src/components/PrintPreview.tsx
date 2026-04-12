@@ -21,6 +21,7 @@ export interface PrintSettings {
   showDoctorText: boolean;
   showCC: boolean;
   showOE: boolean;
+  showInvestigationResults: boolean;
   showDiagnosis: boolean;
   showInvestigation: boolean;
   showFooter: boolean;
@@ -38,6 +39,7 @@ export const defaultPrintSettings: PrintSettings = {
   showDoctorText: true,
   showCC: true,
   showOE: true,
+  showInvestigationResults: true,
   showDiagnosis: true,
   showInvestigation: true,
   showFooter: true,
