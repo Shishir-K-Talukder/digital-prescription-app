@@ -52,6 +52,10 @@ interface TypeInferenceContext {
   genericTypeCounts: Map<string, TypeCountMap>;
 }
 
+const CAPSULE_PREFERRED_GENERIC_DEFAULTS = new Set([
+  "omeprazole",
+]);
+
 const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 
 const sanitizeQuery = (query: string) => normalizeText(query);
@@ -95,7 +99,10 @@ const detectExplicitType = (name: string, strength: string, generic = ""): strin
   return null;
 };
 
-const detectType = (name: string, strength: string, generic = "") => detectExplicitType(name, strength, generic) ?? "Tab";
+const detectType = (name: string, strength: string, generic = "") => {
+  const medicine = { name, strength, generic, company: "" } satisfies DbMedicine;
+  return detectExplicitType(name, strength, generic) ?? getDefaultTypeForGroup(inferTypeGroup(medicine), medicine);
+};
 
 const FORMULATION_QUERY_TERMS = new Set([
   "tab", "tabs", "tablet", "tablets",
@@ -181,6 +188,15 @@ const getDominantType = (counts: TypeCountMap | undefined) => {
   return topCount >= secondCount + 2 || topCount >= secondCount * 1.5 ? topType : null;
 };
 
+const shouldDefaultToCapsule = (medicine: DbMedicine, group: MedicineTypeGroup) => {
+  if (group !== "oralSolid") return false;
+
+  const combined = `${medicine.name} ${medicine.strength} ${medicine.generic}`.toLowerCase();
+  if (/\btablet\b|\btablets\b|\bmups\b|sachet/i.test(combined)) return false;
+
+  return CAPSULE_PREFERRED_GENERIC_DEFAULTS.has(normalizeGenericLookup(medicine.generic));
+};
+
 const inferTypeGroup = (medicine: DbMedicine): MedicineTypeGroup => {
   const explicitType = detectExplicitType(medicine.name, medicine.strength, medicine.generic);
   if (explicitType) return getTypeGroup(explicitType);
@@ -201,6 +217,7 @@ const inferTypeGroup = (medicine: DbMedicine): MedicineTypeGroup => {
 
 const getDefaultTypeForGroup = (group: MedicineTypeGroup, medicine: DbMedicine) => {
   const combined = `${medicine.name} ${medicine.strength} ${medicine.generic}`.toLowerCase();
+  const genericKey = normalizeGenericLookup(medicine.generic);
 
   if (group === "topical") {
     if (/\blotion\b/i.test(combined)) return "Lotion";
@@ -218,7 +235,11 @@ const getDefaultTypeForGroup = (group: MedicineTypeGroup, medicine: DbMedicine) 
   if (group === "injectable") return "Inj";
   if (group === "inhaled") return /\bnebu\b|\bneb\b|\brespules?\b/i.test(combined) ? "Nebu" : "Inhaler";
   if (group === "suppository") return "Supp";
-  if (group === "oralSolid") return /sachet/i.test(combined) ? "Sachet" : "Tab";
+  if (group === "oralSolid") {
+    if (/sachet/i.test(combined)) return "Sachet";
+    if (CAPSULE_PREFERRED_GENERIC_DEFAULTS.has(genericKey)) return "Cap";
+    return "Tab";
+  }
 
   return "Tab";
 };
@@ -250,6 +271,8 @@ const inferTypeFromContext = (medicine: DbMedicine, context: TypeInferenceContex
   const group = inferTypeGroup(medicine);
   const brandType = getDominantType(context.brandTypeCounts.get(getTypeLookupKey(normalizeText(medicine.name), group)));
   if (brandType) return brandType;
+
+  if (shouldDefaultToCapsule(medicine, group)) return "Cap";
 
   const genericKey = normalizeGenericLookup(medicine.generic);
   if (genericKey) {
@@ -348,14 +371,25 @@ const getStrengthPriority = (medicine: RankedMedicine, strengthTokens: string[])
   if (strengthTokens.length === 0) return 0;
 
   const hasExactStrengthMatch = strengthTokens.every((token) => medicine.strengthTokens.includes(token));
-  if (hasExactStrengthMatch) return 0;
+  if (hasExactStrengthMatch) {
+    const extraStrengthTokens = medicine.strengthTokens.filter((token) => !strengthTokens.includes(token));
+    if (extraStrengthTokens.length === 0) return 0;
+    if (extraStrengthTokens.every((token) => STRENGTH_QUERY_TERMS.has(token))) return 1;
+    if (extraStrengthTokens.some((token) => FORMULATION_QUERY_TERMS.has(token))) return 2;
+    return 3;
+  }
 
   const numericTokens = strengthTokens.filter((token) => /\d/.test(token));
   const hasNumericStrengthMatch = numericTokens.length > 0 && numericTokens.every((token) => medicine.strengthTokens.includes(token));
-  if (hasNumericStrengthMatch) return 1;
+  if (hasNumericStrengthMatch) {
+    const extraNumericTokens = medicine.strengthTokens.filter((token) => !numericTokens.includes(token));
+    if (extraNumericTokens.every((token) => STRENGTH_QUERY_TERMS.has(token))) return 4;
+    if (extraNumericTokens.some((token) => FORMULATION_QUERY_TERMS.has(token))) return 5;
+    return 6;
+  }
 
-  if (strengthTokens.some((token) => medicine.strengthTokens.includes(token))) return 2;
-  return 3;
+  if (strengthTokens.some((token) => medicine.strengthTokens.includes(token))) return 7;
+  return 8;
 };
 
 const getMatchRank = (medicine: RankedMedicine, parts: SearchParts) => {

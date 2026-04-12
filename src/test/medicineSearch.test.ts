@@ -8,6 +8,7 @@ describe("medicine search helpers", () => {
     expect(detectType("Artigest", "100 mg", "Progesterone Micronized (Capsule)")).toBe("Cap");
     expect(detectType("A-Mycin", "3% W/V", "Erythromycin (Lotion)")).toBe("Lotion");
     expect(detectType("A-Phenicol", "0.5%", "Chloramphenicol (Ophthalmic)")).toBe("Drop");
+    expect(detectType("Seclo", "20 mg", "Omeprazole")).toBe("Cap");
   });
 
   it("keeps topical matches ahead of oral variants when the query contains a wrong topical formulation", () => {
@@ -65,6 +66,23 @@ describe("medicine search helpers", () => {
     expect(results[0]?.name).toBe("A-Flox");
     expect(results[0]?.strength).toBe("500 mg");
     expect(results[0]?.detectedType).toBe("Cap");
+  });
+
+  it("shows plain omeprazole brands like Seclo as Cap while keeping explicit MUPS tablet rows as Tab", () => {
+    const results = filterAndSortMatches(
+      [
+        { name: "Seclo", strength: "20 mg", generic: "Omeprazole", company: "Square Pharmaceuticals PLC" },
+        { name: "Seclo", strength: "40 mg", generic: "Omeprazole", company: "Square Pharmaceuticals PLC" },
+        { name: "Seclo", strength: "40 mg/vial", generic: "Omeprazole", company: "Square Pharmaceuticals PLC" },
+        { name: "Seclo MUPS", strength: "20 mg", generic: "Omeprazole (MUPS tablet)", company: "Square Pharmaceuticals PLC" },
+      ],
+      "Seclo 20",
+    );
+
+    expect(results[0]?.name).toBe("Seclo");
+    expect(results[0]?.strength).toBe("20 mg");
+    expect(results[0]?.detectedType).toBe("Cap");
+    expect(results.find((medicine) => medicine.name === "Seclo MUPS")?.detectedType).toBe("Tab");
   });
 
   it("keeps hyphenated brand names searchable without collapsing them into generic cap matches", () => {
