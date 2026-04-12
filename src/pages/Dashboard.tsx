@@ -10,8 +10,10 @@ import { usePrescriptions } from "@/hooks/usePrescriptions";
 import FloatingNav from "@/components/FloatingNav";
 import PrintSetup from "@/components/PrintSetup";
 import MedicineSettingsPage from "@/components/MedicineSettingsPage";
+import AppointmentPanel from "@/components/AppointmentPanel";
+import PatientRecordsPanel from "@/components/PatientRecordsPanel";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Users, FileText, CalendarDays, SlidersHorizontal, Settings, Stethoscope, Home, DollarSign, Plus, Trash2, Building2, Phone, TrendingUp } from "lucide-react";
+import { Users, FileText, CalendarDays, SlidersHorizontal, Settings, Stethoscope, Home, DollarSign, Plus, Trash2, Building2, Phone, TrendingUp, ClipboardList, FolderOpen } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { AdviceData } from "@/components/AdviceSection";
 
@@ -153,9 +155,15 @@ const Dashboard = () => {
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-5 w-full grid grid-cols-4 h-11 bg-muted/60 p-1 rounded-xl border border-border shadow-sm">
+          <TabsList className="mb-5 w-full grid grid-cols-6 h-11 bg-muted/60 p-1 rounded-xl border border-border shadow-sm">
             <TabsTrigger value="overview" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <Home className="w-3.5 h-3.5" /> Overview
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <ClipboardList className="w-3.5 h-3.5" /> Appointments
+            </TabsTrigger>
+            <TabsTrigger value="records" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <FolderOpen className="w-3.5 h-3.5" /> Records
             </TabsTrigger>
             <TabsTrigger value="income" className="gap-1.5 text-xs font-semibold rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <DollarSign className="w-3.5 h-3.5" /> Income
