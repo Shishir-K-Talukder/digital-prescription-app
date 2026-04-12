@@ -81,6 +81,7 @@ const detectExplicitType = (name: string, strength: string, generic = ""): strin
   const genericTokens = tokenizeText(generic);
   const hasToken = (tokens: string[], ...patterns: RegExp[]) =>
     tokens.some((token) => patterns.some((pattern) => pattern.test(token)));
+  const hasGenericToken = (...patterns: RegExp[]) => hasToken(genericTokens, ...patterns);
   const hasNameOrGenericToken = (...patterns: RegExp[]) =>
     hasToken(nameTokens, ...patterns) || hasToken(genericTokens, ...patterns);
 
