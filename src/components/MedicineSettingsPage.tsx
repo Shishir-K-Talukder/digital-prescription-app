@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers, ClipboardList, Search } from "lucide-react";
+import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers, ClipboardList, Search, GripVertical } from "lucide-react";
 import { MedicineOptions } from "@/components/MedicineSettings";
 
 interface ListEditorProps {
@@ -16,10 +16,34 @@ const ListEditor = ({ items, onChange, placeholder }: ListEditorProps) => {
   const [newItem, setNewItem] = useState("");
   const [editIdx, setEditIdx] = useState<number | null>(null);
   const [editValue, setEditValue] = useState("");
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const addItem = () => {
     const v = newItem.trim();
     if (v && !items.includes(v)) { onChange([...items, v]); setNewItem(""); }
+  };
+
+  const handleDragStart = (idx: number) => {
+    dragItem.current = idx;
+  };
+
+  const handleDragEnter = (idx: number) => {
+    dragOverItem.current = idx;
+    setDragOverIdx(idx);
+  };
+
+  const handleDragEnd = () => {
+    if (dragItem.current !== null && dragOverItem.current !== null && dragItem.current !== dragOverItem.current) {
+      const reordered = [...items];
+      const [removed] = reordered.splice(dragItem.current, 1);
+      reordered.splice(dragOverItem.current, 0, removed);
+      onChange(reordered);
+    }
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDragOverIdx(null);
   };
 
   return (
@@ -30,7 +54,17 @@ const ListEditor = ({ items, onChange, placeholder }: ListEditorProps) => {
       </div>
       <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 text-sm group border border-transparent hover:border-border transition-colors">
+          <div
+            key={idx}
+            draggable={editIdx !== idx}
+            onDragStart={() => handleDragStart(idx)}
+            onDragEnter={() => handleDragEnter(idx)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className={`flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 text-sm group border transition-colors cursor-grab active:cursor-grabbing ${
+              dragOverIdx === idx ? "border-primary bg-primary/5" : "border-transparent hover:border-border"
+            }`}
+          >
             {editIdx === idx ? (
               <>
                 <Input value={editValue} onChange={(e) => setEditValue(e.target.value)} className="h-8 text-sm flex-1" onKeyDown={(e) => e.key === "Enter" && (() => { const v = editValue.trim(); if (v) { const u = [...items]; u[idx] = v; onChange(u); } setEditIdx(null); })()} autoFocus />
@@ -39,6 +73,7 @@ const ListEditor = ({ items, onChange, placeholder }: ListEditorProps) => {
               </>
             ) : (
               <>
+                <GripVertical className="w-4 h-4 text-muted-foreground/50 shrink-0" />
                 <span className="flex-1 text-foreground">{item}</span>
                 <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100" onClick={() => { setEditIdx(idx); setEditValue(item); }}><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></Button>
                 <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100 text-destructive" onClick={() => onChange(items.filter((_, i) => i !== idx))}><Trash2 className="w-3.5 h-3.5" /></Button>
