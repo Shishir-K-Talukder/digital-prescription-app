@@ -58,16 +58,12 @@ const Index = () => {
   };
 
   const handlePrint = () => {
-    // Auto-save prescription when printing
-    savePatientToHistory(patient);
-    savePrescription(patient, clinical, medicines, advice);
-
     const printData = { doctor, patient, clinical, medicines, advice, printSettings };
     sessionStorage.setItem("prescription-print-data", JSON.stringify(printData));
-    
-    // Use basename-aware path for print page
-    const basename = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
-    window.open(`${basename}/print`, "_blank");
+
+    const currentLocation = `${window.location.origin}${window.location.pathname.endsWith("/") ? window.location.pathname : `${window.location.pathname}/`}`;
+    const printUrl = new URL("print", currentLocation);
+    window.open(printUrl.toString(), "_blank");
   };
 
   const handleSave = () => {

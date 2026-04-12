@@ -34,14 +34,13 @@ const PrintPage = () => {
   }, []);
 
   useEffect(() => {
-    if (data) {
-      // Auto-download as image then trigger print
-      const timer = setTimeout(async () => {
-        await downloadAsImage();
-        window.print();
-      }, 800);
-      return () => clearTimeout(timer);
-    }
+    if (!data) return;
+
+    const timer = setTimeout(() => {
+      window.print();
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [data]);
 
   const downloadAsImage = async () => {
