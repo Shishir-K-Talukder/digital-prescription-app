@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers } from "lucide-react";
+import type { PediatricDoseRule } from "@/lib/pediatricDose";
 
 export interface MedicineOptions {
   types: string[];
@@ -15,6 +16,7 @@ export interface MedicineOptions {
   followUpOptions: string[];
   investigations: string[];
   chiefComplaints: string[];
+  pediatricRules: PediatricDoseRule[];
 }
 
 const STORAGE_KEY = "medicine-options";
@@ -121,6 +123,7 @@ const DEFAULT_OPTIONS: MedicineOptions = {
     "Burning micturition", "Skin rash", "Joint pain",
     "Back pain", "Loss of appetite", "Weight loss",
   ],
+  pediatricRules: [],
 };
 
 export const loadMedicineOptions = (): MedicineOptions => {

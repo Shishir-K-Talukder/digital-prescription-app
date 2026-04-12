@@ -28,6 +28,27 @@ interface DbMedicine {
   company: string;
 }
 
+const sanitizeQuery = (query: string) => query.trim().replace(/[,%()']/g, " ").replace(/\s+/g, " ").trim();
+
+const getMatchRank = (medicine: Pick<DbMedicine, "name" | "generic">, query: string) => {
+  const name = medicine.name.toLowerCase();
+  const generic = medicine.generic.toLowerCase();
+
+  if (name.startsWith(query)) return 0;
+  if (generic.startsWith(query)) return 1;
+  if (name.includes(query)) return 2;
+  if (generic.includes(query)) return 3;
+  return 4;
+};
+
+const toSuggestion = (medicine: DbMedicine): MedicineSuggestion => ({
+  name: medicine.name,
+  strength: medicine.strength,
+  generic: medicine.generic,
+  company: medicine.company,
+  detectedType: detectType(medicine.strength),
+});
+
 // Fallback: load from static JSON if DB is empty
 let fallbackData: DbMedicine[] | null = null;
 let fallbackPromise: Promise<DbMedicine[]> | null = null;
@@ -46,44 +67,42 @@ const loadFallback = (): Promise<DbMedicine[]> => {
 };
 
 const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
+  const sanitizedQuery = sanitizeQuery(query);
+  if (!sanitizedQuery) return [];
+
   // Try database first
   const { data, error } = await supabase
     .from("medicines")
     .select("name, strength, generic, company")
-    .ilike("name", `%${query}%`)
-    .limit(20);
+    .or(`name.ilike.%${sanitizedQuery}%,generic.ilike.%${sanitizedQuery}%`)
+    .limit(30);
 
   if (error || !data || data.length === 0) {
     // Fallback to static JSON
     const fallback = await loadFallback();
-    const q = query.toLowerCase();
-    const starts: MedicineSuggestion[] = [];
-    const contains: MedicineSuggestion[] = [];
+    const q = sanitizedQuery.toLowerCase();
+    const matches: DbMedicine[] = [];
     for (const med of fallback) {
-      if (starts.length + contains.length >= 20) break;
-      const lower = med.name.toLowerCase();
-      const suggestion: MedicineSuggestion = {
-        name: med.name, strength: med.strength, generic: med.generic,
-        company: med.company, detectedType: detectType(med.strength),
-      };
-      if (lower.startsWith(q)) starts.push(suggestion);
-      else if (lower.includes(q)) contains.push(suggestion);
+      const matchesName = med.name.toLowerCase().includes(q);
+      const matchesGeneric = med.generic.toLowerCase().includes(q);
+      if (matchesName || matchesGeneric) {
+        matches.push(med);
+      }
+      if (matches.length >= 40) break;
     }
-    return [...starts, ...contains].slice(0, 20);
+    return matches
+      .sort((a, b) => getMatchRank(a, q) - getMatchRank(b, q))
+      .slice(0, 20)
+      .map(toSuggestion);
   }
 
-  // Sort: starts-with first, then contains
-  const q = query.toLowerCase();
+  // Sort: name starts-with first, then generic starts-with, then contains
+  const q = sanitizedQuery.toLowerCase();
   const sorted = (data as unknown as DbMedicine[]).sort((a, b) => {
-    const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
-    const bStarts = b.name.toLowerCase().startsWith(q) ? 0 : 1;
-    return aStarts - bStarts;
+    return getMatchRank(a, q) - getMatchRank(b, q);
   });
 
-  return sorted.map((m) => ({
-    name: m.name, strength: m.strength, generic: m.generic,
-    company: m.company, detectedType: detectType(m.strength),
-  }));
+  return sorted.map(toSuggestion);
 };
 
 export const useMedicineSearch = (query: string) => {

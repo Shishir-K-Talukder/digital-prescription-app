@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers, ClipboardList, Search, GripVertical, BookTemplate } from "lucide-react";
+import { Plus, Trash2, Settings, Pencil, Check, X, Pill, Clock, Utensils, MessageSquare, CalendarDays, Layers, ClipboardList, Search, GripVertical, BookTemplate, Baby } from "lucide-react";
 import { MedicineOptions } from "@/components/MedicineSettings";
 import TreatmentTemplateManager from "@/components/TreatmentTemplateManager";
+import PediatricDoseRuleManager from "@/components/PediatricDoseRuleManager";
 
 interface ListEditorProps {
   items: string[];
@@ -139,6 +140,19 @@ const MedicineSettingsPage = ({ options, onChange }: Props) => {
     { value: "followup", label: "Follow-up", icon: CalendarDays, content: <ListEditor items={options.followUpOptions} onChange={(v) => handleChange("followUpOptions", v)} placeholder="e.g. ৭ দিন পর" /> },
     { value: "investigations", label: "Investigation", icon: Search, content: <ListEditor items={options.investigations || []} onChange={(v) => handleChange("investigations", v)} placeholder="e.g. CBC, X-Ray Chest P/A" /> },
     { value: "chiefComplaints", label: "C/C", icon: ClipboardList, content: <ListEditor items={options.chiefComplaints || []} onChange={(v) => handleChange("chiefComplaints", v)} placeholder="e.g. Fever, Headache" /> },
+    {
+      value: "pediatric",
+      label: "Pediatric",
+      icon: Baby,
+      content: (
+        <PediatricDoseRuleManager
+          rules={options.pediatricRules || []}
+          meals={options.meals}
+          durations={options.durations}
+          onChange={(rules) => onChange({ ...options, pediatricRules: rules })}
+        />
+      ),
+    },
     { value: "templates", label: "Templates", icon: BookTemplate, content: <TreatmentTemplateManager /> },
   ];
 
