@@ -683,7 +683,7 @@ export const useMedicineSearch = (query: string) => {
         setSuggestions(results);
         setLoading(false);
       }
-    }, 150);
+    }, 80);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
