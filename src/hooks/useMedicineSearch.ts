@@ -45,13 +45,20 @@ interface RankedMedicine extends DbMedicine {
   searchableText: string;
 }
 
+type TypeCountMap = Map<string, number>;
+
+interface TypeInferenceContext {
+  brandTypeCounts: Map<string, TypeCountMap>;
+  genericTypeCounts: Map<string, TypeCountMap>;
+}
+
 const normalizeText = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
 
 const sanitizeQuery = (query: string) => normalizeText(query);
 
 const tokenizeText = (value: string) => normalizeText(value).split(" ").filter(Boolean);
 
-const detectType = (name: string, strength: string, generic = ""): string => {
+const detectExplicitType = (name: string, strength: string, generic = ""): string | null => {
   const n = name.toLowerCase();
   const s = strength.toLowerCase();
   const g = generic.toLowerCase();
@@ -73,8 +80,8 @@ const detectType = (name: string, strength: string, generic = ""): string => {
   if (/\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "Nebu";
   if (/\bsuppository\b|\bsupp\b/i.test(combined) || hasNameOrGenericToken(/supp$/, /suppo$/)) return "Supp";
   if (/\binjection\b|\binj\b/i.test(combined) || /\/vial|\/ampoule|\/prefilled|\/syringe/i.test(s)) return "Inj";
-  if (/\bsuspension\b|\bsyrup\b|\bsyr\b|\bsyp\b|syrup preparation/i.test(combined) || (/\/5\s*ml|\/10\s*ml/i.test(s) && !/injection|iv|im/i.test(combined))) return "Syr";
-  if (/\bdrop\b|\bdrops\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
+  if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|syrup preparation/i.test(combined) || (/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(s) && !/injection|iv|im/i.test(combined))) return "Syr";
+  if (/\bdrop\b|\bdrops\b|\bophthalmic\b|\botic\b|\bnasal\b/i.test(combined) || hasNameOrGenericToken(/drop$/, /drops$/) || (/\/ml|mg\/ml/i.test(s) && !/injection|iv|im|vial/i.test(combined))) return "Drop";
   if (/topical/i.test(s) || /topical/i.test(g)) {
     if (/\blotion\b/i.test(n)) return "Lotion";
     if (/\bgel\b/i.test(n)) return "Gel";
@@ -83,9 +90,12 @@ const detectType = (name: string, strength: string, generic = ""): string => {
   }
   if (/sachet/i.test(combined)) return "Sachet";
   if (/\bcapsule\b|\bsoftgel\b/i.test(combined) || hasNameOrGenericToken(/caps?$/)) return "Cap";
+  if (/\btablet\b|\btablets\b/i.test(combined) || hasNameOrGenericToken(/tabs?$/, /tablet$/)) return "Tab";
 
-  return "Tab";
+  return null;
 };
+
+const detectType = (name: string, strength: string, generic = "") => detectExplicitType(name, strength, generic) ?? "Tab";
 
 const FORMULATION_QUERY_TERMS = new Set([
   "tab", "tabs", "tablet", "tablets",
@@ -97,6 +107,7 @@ const FORMULATION_QUERY_TERMS = new Set([
   "inj", "injection", "vial", "amp", "ampoule", "iv", "im",
   "supp", "suppository", "suppositories",
   "inhaler", "puff", "nebu", "neb", "nebulizer", "nebuliser",
+  "ophthalmic", "otic", "nasal",
   "softgel",
 ]);
 
@@ -149,6 +160,106 @@ const getTypeGroup = (type: string): MedicineTypeGroup => {
   return "other";
 };
 
+const normalizeGenericLookup = (value: string) => normalizeText(value.replace(/\([^)]*\)/g, " "));
+
+const getTypeLookupKey = (value: string, group: MedicineTypeGroup) => `${value}__${group}`;
+
+const incrementTypeCount = (lookup: Map<string, TypeCountMap>, key: string, type: string) => {
+  const counts = lookup.get(key) ?? new Map<string, number>();
+  counts.set(type, (counts.get(type) ?? 0) + 1);
+  lookup.set(key, counts);
+};
+
+const getDominantType = (counts: TypeCountMap | undefined) => {
+  if (!counts || counts.size === 0) return null;
+
+  const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  if (sorted.length === 1) return sorted[0][0];
+
+  const [topType, topCount] = sorted[0];
+  const secondCount = sorted[1][1];
+  return topCount >= secondCount + 2 || topCount >= secondCount * 1.5 ? topType : null;
+};
+
+const inferTypeGroup = (medicine: DbMedicine): MedicineTypeGroup => {
+  const explicitType = detectExplicitType(medicine.name, medicine.strength, medicine.generic);
+  if (explicitType) return getTypeGroup(explicitType);
+
+  const s = medicine.strength.toLowerCase();
+  const combined = `${medicine.name} ${medicine.strength} ${medicine.generic}`.toLowerCase();
+
+  if (/\binjection\b|\binj\b|\/vial|\/ampoule|\/prefilled|\/syringe/i.test(combined)) return "injectable";
+  if (/\bcream\b|\bgel\b|\blotion\b|\bointment\b|\boint\b|\bshampoo\b|\bspray\b|\btopical\b/i.test(combined)) return "topical";
+  if (/\binhaler\b|\bhaler\b|\/puff|mcg\/dose|\bnebuli[sz]er?\b|\brespules?\b/i.test(combined)) return "inhaled";
+  if (/\bsuppository\b|\bsupp\b/i.test(combined)) return "suppository";
+  if (/\bsuspension\b|\bdry syrup\b|\bsyrup\b|\bsyr\b|\bsyp\b|powder for suspension|\bophthalmic\b|\botic\b|\bnasal\b/i.test(combined)) return "oralLiquid";
+  if ((/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(s) || /\/ml|mg\/ml/i.test(s)) && !/injection|iv|im|vial/i.test(combined)) return "oralLiquid";
+  if (/sachet/i.test(combined)) return "oralSolid";
+  if (/\d/.test(s) || /\bcapsule\b|\bsoftgel\b|\btablet\b|\btablets\b/i.test(combined)) return "oralSolid";
+  return "other";
+};
+
+const getDefaultTypeForGroup = (group: MedicineTypeGroup, medicine: DbMedicine) => {
+  const combined = `${medicine.name} ${medicine.strength} ${medicine.generic}`.toLowerCase();
+
+  if (group === "topical") {
+    if (/\blotion\b/i.test(combined)) return "Lotion";
+    if (/\bgel\b/i.test(combined)) return "Gel";
+    if (/\bointment\b|\boint\b/i.test(combined)) return "Oint";
+    return "Cream";
+  }
+
+  if (group === "oralLiquid") {
+    if (/\bophthalmic\b|\botic\b|\bnasal\b|\bdrop\b|\bdrops\b/i.test(combined)) return "Drop";
+    if (/\/ml|mg\/ml/i.test(medicine.strength) && !/\/5\s*ml|\/10\s*ml|\/15\s*ml/i.test(medicine.strength)) return "Drop";
+    return "Syr";
+  }
+
+  if (group === "injectable") return "Inj";
+  if (group === "inhaled") return /\bnebu\b|\bneb\b|\brespules?\b/i.test(combined) ? "Nebu" : "Inhaler";
+  if (group === "suppository") return "Supp";
+  if (group === "oralSolid") return /sachet/i.test(combined) ? "Sachet" : "Tab";
+
+  return "Tab";
+};
+
+const buildTypeInferenceContext = (medicines: DbMedicine[]): TypeInferenceContext => {
+  const brandTypeCounts = new Map<string, TypeCountMap>();
+  const genericTypeCounts = new Map<string, TypeCountMap>();
+
+  medicines.forEach((medicine) => {
+    const explicitType = detectExplicitType(medicine.name, medicine.strength, medicine.generic);
+    if (!explicitType) return;
+
+    const group = getTypeGroup(explicitType);
+    incrementTypeCount(brandTypeCounts, getTypeLookupKey(normalizeText(medicine.name), group), explicitType);
+
+    const genericKey = normalizeGenericLookup(medicine.generic);
+    if (genericKey) {
+      incrementTypeCount(genericTypeCounts, getTypeLookupKey(genericKey, group), explicitType);
+    }
+  });
+
+  return { brandTypeCounts, genericTypeCounts };
+};
+
+const inferTypeFromContext = (medicine: DbMedicine, context: TypeInferenceContext) => {
+  const explicitType = detectExplicitType(medicine.name, medicine.strength, medicine.generic);
+  if (explicitType) return explicitType;
+
+  const group = inferTypeGroup(medicine);
+  const brandType = getDominantType(context.brandTypeCounts.get(getTypeLookupKey(normalizeText(medicine.name), group)));
+  if (brandType) return brandType;
+
+  const genericKey = normalizeGenericLookup(medicine.generic);
+  if (genericKey) {
+    const genericType = getDominantType(context.genericTypeCounts.get(getTypeLookupKey(genericKey, group)));
+    if (genericType) return genericType;
+  }
+
+  return getDefaultTypeForGroup(group, medicine);
+};
+
 const detectFormulationHint = (query: string): FormulationHint | null => {
   const raw = sanitizeQuery(query);
   if (!raw) return null;
@@ -165,6 +276,7 @@ const detectFormulationHint = (query: string): FormulationHint | null => {
   if (/\binhaler\b|\bpuff\b/.test(raw)) return { exactType: "Inhaler", group: "inhaled" };
   if (/\bnebu\b|\bneb\b|\brespules?\b|\bnebulizer\b|\bnebuliser\b/.test(raw)) return { exactType: "Nebu", group: "inhaled" };
   if (/\bsupp\b|\bsuppository\b/.test(raw)) return { exactType: "Supp", group: "suppository" };
+  if (/\bophthalmic\b|\botic\b|\bnasal\b/.test(raw)) return { exactType: "Drop", group: "oralLiquid" };
 
   return null;
 };
@@ -210,15 +322,20 @@ const buildSearchableText = (medicine: DbMedicine) => normalizeText(`${medicine.
 
 const matchesTokens = (value: string, tokens: string[]) => tokens.every((token) => value.includes(token));
 
-const toRankedMedicine = (medicine: DbMedicine): RankedMedicine => ({
+const toRankedMedicine = (medicine: DbMedicine, context: TypeInferenceContext): RankedMedicine => ({
   ...medicine,
-  detectedType: detectType(medicine.name, medicine.strength, medicine.generic),
+  detectedType: inferTypeFromContext(medicine, context),
   normalizedName: normalizeText(medicine.name),
   normalizedGeneric: normalizeText(medicine.generic),
   normalizedStrength: normalizeText(medicine.strength),
   strengthTokens: tokenizeStrengthText(medicine.strength),
   searchableText: buildSearchableText(medicine),
 });
+
+const rankMedicines = (medicines: DbMedicine[]) => {
+  const context = buildTypeInferenceContext(medicines);
+  return medicines.map((medicine) => toRankedMedicine(medicine, context));
+};
 
 const getFormulationPriority = (medicine: RankedMedicine, formulationHint: FormulationHint | null) => {
   if (!formulationHint) return 0;
@@ -272,13 +389,12 @@ const getMatchRank = (medicine: RankedMedicine, parts: SearchParts) => {
   return 19;
 };
 
-const filterAndSortMatches = (medicines: DbMedicine[], query: string) => {
+const filterAndSortRankedMatches = (medicines: RankedMedicine[], query: string) => {
   const parts = getSearchParts(query);
   const { raw, searchText, tokens, brandTokens, strengthTokens, formulationHint } = parts;
   const targetLength = searchText.length || raw.length;
 
   return medicines
-    .map(toRankedMedicine)
     .filter((medicine) => {
       if (searchText && medicine.searchableText.includes(searchText)) return true;
       if (brandTokens.length > 0 && matchesTokens(medicine.normalizedName, brandTokens)) return true;
@@ -307,6 +423,8 @@ const filterAndSortMatches = (medicines: DbMedicine[], query: string) => {
     .slice(0, 20);
 };
 
+const filterAndSortMatches = (medicines: DbMedicine[], query: string) => filterAndSortRankedMatches(rankMedicines(medicines), query);
+
 const toSuggestion = (medicine: RankedMedicine): MedicineSuggestion => ({
   name: medicine.name,
   strength: medicine.strength,
@@ -324,6 +442,7 @@ export const __medicineSearchUtils = {
 // Fallback: load from static JSON if DB is empty
 let fallbackData: DbMedicine[] | null = null;
 let fallbackPromise: Promise<DbMedicine[]> | null = null;
+let fallbackRankedData: RankedMedicine[] | null = null;
 
 const loadFallback = (): Promise<DbMedicine[]> => {
   if (fallbackData) return Promise.resolve(fallbackData);
@@ -338,11 +457,19 @@ const loadFallback = (): Promise<DbMedicine[]> => {
   return fallbackPromise;
 };
 
+const loadFallbackRanked = async (): Promise<RankedMedicine[]> => {
+  if (fallbackRankedData) return fallbackRankedData;
+  const medicines = await loadFallback();
+  fallbackRankedData = rankMedicines(medicines);
+  return fallbackRankedData;
+};
+
 const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
   const { nameSearchTerms, searchTerms } = getSearchParts(query);
   if (nameSearchTerms.length === 0 && searchTerms.length === 0) return [];
 
   const refineMatches = (medicines: DbMedicine[]) => filterAndSortMatches(medicines, query).map(toSuggestion);
+  const fallbackMatches = filterAndSortRankedMatches(await loadFallbackRanked(), query);
   const candidates: DbMedicine[] = [];
 
   const nameFilters = buildOrFilters(["name"], nameSearchTerms);
@@ -385,11 +512,13 @@ const searchFromDb = async (query: string): Promise<MedicineSuggestion[]> => {
     }
   }
 
-  const refined = refineMatches(dedupeMedicines(candidates));
+  const refined = refineMatches(dedupeMedicines([
+    ...candidates,
+    ...fallbackMatches.map(({ name, strength, generic, company }) => ({ name, strength, generic, company })),
+  ]));
   if (refined.length > 0) return refined;
 
-  const fallback = await loadFallback();
-  return refineMatches(fallback);
+  return fallbackMatches.map(toSuggestion);
 };
 
 export const useMedicineSearch = (query: string) => {

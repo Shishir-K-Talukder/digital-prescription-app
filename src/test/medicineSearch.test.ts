@@ -7,6 +7,7 @@ describe("medicine search helpers", () => {
   it("detects formulation from the generic field when name and strength do not include it", () => {
     expect(detectType("Artigest", "100 mg", "Progesterone Micronized (Capsule)")).toBe("Cap");
     expect(detectType("A-Mycin", "3% W/V", "Erythromycin (Lotion)")).toBe("Lotion");
+    expect(detectType("A-Phenicol", "0.5%", "Chloramphenicol (Ophthalmic)")).toBe("Drop");
   });
 
   it("keeps topical matches ahead of oral variants when the query contains a wrong topical formulation", () => {
@@ -47,6 +48,23 @@ describe("medicine search helpers", () => {
 
     expect(results[0]?.name).toBe("Napa");
     expect(results[0]?.strength).toBe("500 mg");
+  });
+
+  it("infers capsule formulations from related medicine database rows when the selected brand row is ambiguous", () => {
+    const results = filterAndSortMatches(
+      [
+        { name: "A-Flox", strength: "250 mg", generic: "Flucloxacillin Sodium", company: "ACME Laboratories Ltd." },
+        { name: "A-Flox", strength: "500 mg", generic: "Flucloxacillin Sodium", company: "ACME Laboratories Ltd." },
+        { name: "A-Flox", strength: "125 mg/5 ml", generic: "Flucloxacillin Sodium", company: "ACME Laboratories Ltd." },
+        { name: "A-Flox", strength: "500 mg/vial", generic: "Flucloxacillin Sodium", company: "ACME Laboratories Ltd." },
+        { name: "Fluclox-Cap", strength: "500 mg", generic: "Flucloxacillin Sodium (Capsule)", company: "Example Pharma" },
+      ],
+      "A-Flox 500",
+    );
+
+    expect(results[0]?.name).toBe("A-Flox");
+    expect(results[0]?.strength).toBe("500 mg");
+    expect(results[0]?.detectedType).toBe("Cap");
   });
 
   it("keeps hyphenated brand names searchable without collapsing them into generic cap matches", () => {
