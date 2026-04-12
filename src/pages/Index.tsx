@@ -9,6 +9,8 @@ import ClinicalSection, { ClinicalData, defaultOnExamination } from "@/component
 import MedicineSection, { Medicine } from "@/components/MedicineSection";
 import AdviceSection, { AdviceData } from "@/components/AdviceSection";
 import PrintPreview from "@/components/PrintPreview";
+import InsulinDoseCalculator from "@/components/InsulinDoseCalculator";
+import PediatricDoseCalculator from "@/components/PediatricDoseCalculator";
 import PrescriptionHistory from "@/components/PrescriptionHistory";
 import PatientDocuments from "@/components/PatientDocuments";
 import { useAuth } from "@/contexts/AuthContext";
@@ -157,6 +159,8 @@ const Index = () => {
               </div>
               <div className="space-y-4 min-w-0">
                 <MedicineSection medicines={medicines} onChange={setMedicines} options={medicineOptions} onOptionsChange={saveMedicineOptions} />
+                <InsulinDoseCalculator />
+                <PediatricDoseCalculator />
               </div>
             </div>
 
