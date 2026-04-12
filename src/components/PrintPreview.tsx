@@ -13,6 +13,10 @@ export interface PrintSettings {
   customHeaderWidth?: string;
   patientInfoWidth?: string;
   patientInfoHeight?: string;
+  clinicalNotesWidth?: string;
+  clinicalNotesHeight?: string;
+  rxSectionWidth?: string;
+  rxSectionHeight?: string;
   showDoctorInfo: boolean;
   showDoctorText: boolean;
   showCC: boolean;
@@ -154,7 +158,13 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
       </div>
 
       <div className="flex min-h-[400px]">
-        <div className="w-[35%] border-r border-gray-300 pr-4 space-y-4 text-xs">
+        <div
+          className="w-[35%] border-r border-gray-300 pr-4 space-y-4 text-xs"
+          style={{
+            ...(settings.clinicalNotesWidth ? { width: `${settings.clinicalNotesWidth}mm`, flex: 'none' } : {}),
+            ...(settings.clinicalNotesHeight ? { minHeight: `${settings.clinicalNotesHeight}mm` } : {}),
+          }}
+        >
           {settings.showCC && clinical.chiefComplaint && (
             <div>
               <p className="font-bold underline">C/C</p>
@@ -206,7 +216,13 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
           )}
         </div>
 
-        <div className="flex-1 pl-6">
+        <div
+          className="flex-1 pl-6"
+          style={{
+            ...(settings.rxSectionWidth ? { width: `${settings.rxSectionWidth}mm`, flex: 'none' } : {}),
+            ...(settings.rxSectionHeight ? { minHeight: `${settings.rxSectionHeight}mm` } : {}),
+          }}
+        >
           <p className="text-3xl font-serif italic mb-4">℞</p>
           <div className="space-y-4">
             {medicines.map((med) => (
