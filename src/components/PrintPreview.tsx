@@ -121,14 +121,26 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
     ? parseInt(settings.customWidth)
     : settings.pageSize === "A5" ? 148 : settings.pageSize === "Letter" ? 216 : 210;
 
+  const pageHeightMm = settings.pageSize === "Custom" && settings.customHeight
+    ? parseInt(settings.customHeight)
+    : settings.pageSize === "A5" ? 210 : settings.pageSize === "Letter" ? 279 : 297;
+
   // Convert mm to px (approx 3.78 px/mm) for on-screen preview
-  const previewWidthPx = Math.round(pageWidthMm * 3.78);
+  const MM_TO_PX = 3.78;
+  const previewWidthPx = Math.round(pageWidthMm * MM_TO_PX);
+  const previewHeightPx = Math.round(pageHeightMm * MM_TO_PX);
 
   return (
     <div
-      className="print-preview bg-white text-black p-8 mx-auto border border-border rounded-lg shadow-sm"
+      className="print-preview bg-white text-black p-8 mx-auto border border-border rounded-lg shadow-lg"
       id="prescription-print"
-      style={{ maxWidth: `${previewWidthPx}px` }}
+      style={{
+        width: `${previewWidthPx}px`,
+        minHeight: `${previewHeightPx}px`,
+        maxWidth: `${previewWidthPx}px`,
+        position: 'relative',
+        boxSizing: 'border-box',
+      }}
     >
       {settings.showDoctorInfo && (
         <div className="text-center border-b-2 border-black pb-3 mb-4 mx-auto" style={{ minHeight: headerHeight, ...(headerWidth ? { maxWidth: headerWidth } : {}) }}>
