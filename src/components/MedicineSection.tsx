@@ -17,6 +17,7 @@ export interface TaperingDose {
 export interface Medicine {
   id: string;
   type: string;
+  formulation: string;
   name: string;
   dose: string;
   duration: string;
@@ -39,7 +40,7 @@ const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onCha
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const handleSelect = (med: { name: string; strength: string; detectedType: string }) => {
-    const fullName = `${med.detectedType}. ${med.name} ${med.strength}`.trim();
+    const fullName = `${med.name} ${med.strength}`.trim();
     setQuery(fullName);
     onSelect(fullName, med.detectedType);
     setShowSuggestions(false);
@@ -73,10 +74,9 @@ const MedicineNameInput = ({ value, onChange, onSelect }: { value: string; onCha
               onMouseDown={(e) => { e.preventDefault(); handleSelect(med); }}
             >
               <div className="text-xs font-medium text-foreground">
-                <span className="inline-block bg-primary/15 text-primary font-bold rounded px-1.5 py-0.5 mr-1.5 text-[10px]">{med.detectedType}</span>
                 {med.name} {med.strength}
               </div>
-              <div className="text-[10px] text-muted-foreground pl-[42px]">{med.generic} • {med.company}</div>
+              <div className="text-[10px] text-muted-foreground">{med.generic} • {med.company}</div>
             </button>
           ))}
         </div>
@@ -189,7 +189,7 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
   const addMedicine = () => {
     onChange([
       ...medicines,
-      { id: crypto.randomUUID(), type: options.types[0] || "Tab", name: "", dose: options.doses[2] || "1+0+1", duration: options.durations[1] || "5 days", mealTiming: options.meals[0] || "After meal", instructions: "", taperingDoses: [] },
+      { id: crypto.randomUUID(), type: options.types[0] || "Tab", formulation: options.types[0] || "Tab", name: "", dose: options.doses[2] || "1+0+1", duration: options.durations[1] || "5 days", mealTiming: options.meals[0] || "After meal", instructions: "", taperingDoses: [] },
     ]);
   };
 
@@ -201,6 +201,10 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
 
   const updateMedicineMulti = (id: string, updates: Partial<Medicine>) => {
     onChange(medicines.map((m) => (m.id === id ? { ...m, ...updates } : m)));
+  };
+
+  const handleMedicineSelect = (id: string, fullName: string, detectedType: string) => {
+    onChange(medicines.map((m) => (m.id === id ? { ...m, name: fullName, type: detectedType, formulation: detectedType } : m)));
   };
 
   const updateTaperingDoses = (medId: string, taperingDoses: TaperingDose[]) => {
@@ -259,10 +263,17 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
                   <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">{idx + 1}</span>
                   <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
                 </div>
-                <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="flex-1 grid grid-cols-2 md:grid-cols-6 gap-2">
                   <div className="col-span-2">
                     <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
-                    <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(fullName, detectedType) => updateMedicineMulti(med.id, { name: fullName, type: detectedType })} />
+                    <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(fullName, detectedType) => handleMedicineSelect(med.id, fullName, detectedType)} />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">Formulation</Label>
+                    <Select value={med.formulation || med.type} onValueChange={(v) => updateMedicineMulti(med.id, { formulation: v, type: v })}>
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>{options.types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-[11px] text-muted-foreground">Dose</Label>

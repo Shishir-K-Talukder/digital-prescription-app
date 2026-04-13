@@ -50,6 +50,7 @@ const PediatricDoseCalculator = ({ options, onAddMedicine }: Props) => {
 
     onAddMedicine({
       type: selectedMedicine.detectedType,
+      formulation: selectedMedicine.detectedType,
       name: buildMedicineLabel(selectedMedicine),
       dose: calculation.prescriptionDose,
       duration: activeRule.duration || options.durations[0] || "",

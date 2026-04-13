@@ -308,7 +308,7 @@ const MedicineSettings = ({ options, onChange }: Props) => {
 
 
   const tabs = [
-    { value: "types", label: "Types", icon: Pill, description: "Medicine types (Tab, Cap, Syr...)", content: <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" /> },
+    { value: "types", label: "Formulation", icon: Pill, description: "Formulation types (Tab, Cap, Syr...)", content: <ListEditor items={options.types} onChange={(v) => handleChange("types", v)} placeholder="e.g. Nebulizer" /> },
     { value: "doses", label: "Doses", icon: Layers, description: "Dose patterns", content: <ListEditor items={options.doses} onChange={(v) => handleChange("doses", v)} placeholder="e.g. 2+0+2" /> },
     { value: "durations", label: "Duration", icon: Clock, description: "Duration options", content: <ListEditor items={options.durations} onChange={(v) => handleChange("durations", v)} placeholder="e.g. 21 days" /> },
     { value: "meals", label: "Meal", icon: Utensils, description: "Meal timing options", content: <ListEditor items={options.meals} onChange={(v) => handleChange("meals", v)} placeholder="e.g. With food" /> },
