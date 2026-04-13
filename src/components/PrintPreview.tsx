@@ -132,18 +132,22 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
 
   return (
     <div
-      className="print-preview bg-white text-black p-8 mx-auto border border-border rounded-lg shadow-lg"
+      className="print-preview bg-white text-black mx-auto border border-border rounded-lg shadow-lg"
       id="prescription-print"
       style={{
         width: `${previewWidthPx}px`,
-        minHeight: `${previewHeightPx}px`,
+        height: `${previewHeightPx}px`,
         maxWidth: `${previewWidthPx}px`,
         position: 'relative',
         boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '30px',
+        overflow: 'hidden',
       }}
     >
       {settings.showDoctorInfo && (
-        <div className="text-center border-b-2 border-black pb-3 mb-4 mx-auto" style={{ minHeight: headerHeight, ...(headerWidth ? { maxWidth: headerWidth } : {}) }}>
+        <div className="text-center border-b-2 border-black pb-3 mb-4 mx-auto w-full" style={{ minHeight: headerHeight, ...(headerWidth ? { maxWidth: headerWidth } : {}) }}>
           {settings.showDoctorText && doctorHasInfo ? (
             <>
               <h1 className={`font-bold ${headerTextClass[settings.headerSize]}`}>{doctor.name}</h1>
@@ -171,7 +175,8 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
         <span><strong>Date :: </strong>{patient.date}</span>
       </div>
 
-      <div className="flex min-h-[400px]">
+      {/* Main content area - grows to fill available space */}
+      <div className="flex flex-1 min-h-0">
         <div
           className="w-[35%] border-r border-gray-300 pr-4 space-y-4 text-xs"
           style={{
@@ -278,9 +283,10 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
         </div>
       </div>
 
+      {/* Footer pinned to bottom */}
       {settings.showFooter && (
         <div
-          className="mt-12 pt-4 border-t border-gray-300 flex justify-end"
+          className="pt-4 border-t border-gray-300 flex justify-end mt-auto"
           style={settings.footerHeight ? { minHeight: `${settings.footerHeight}mm` } : {}}
         >
           <div className="text-center text-xs">
