@@ -17,6 +17,7 @@ export interface TaperingDose {
 export interface Medicine {
   id: string;
   type: string;
+  formulation: string;
   name: string;
   dose: string;
   duration: string;
