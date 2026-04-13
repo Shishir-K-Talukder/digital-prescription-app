@@ -148,14 +148,36 @@ const PrintSetup = ({ settings, onChange }: Props) => {
             <Label className="text-[11px] text-muted-foreground mb-1 block">Footer Height (mm)</Label>
             <Input value={settings.footerHeight || ""} onChange={(e) => onChange({ ...settings, footerHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
-          <div className="sm:col-span-2">
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Footer Font Size (px)</Label>
+            <Input value={settings.footerFontSize || ""} onChange={(e) => onChange({ ...settings, footerFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3">
             <Label className="text-[11px] text-muted-foreground mb-1 block">Custom Footer Text</Label>
             <textarea
               value={settings.footerText || ""}
               onChange={(e) => onChange({ ...settings, footerText: e.target.value })}
-              placeholder="Leave empty to use doctor info from profile"
+              placeholder="Leave empty to hide footer content"
               className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
             />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-4 border-t border-border">
+        <Label className="text-[11px] text-muted-foreground font-semibold mb-3 block">Section Text Sizes (px)</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Patient Info Font Size</Label>
+            <Input value={settings.patientInfoFontSize || ""} onChange={(e) => onChange({ ...settings, patientInfoFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+          </div>
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Clinical Notes Font Size</Label>
+            <Input value={settings.clinicalNotesFontSize || ""} onChange={(e) => onChange({ ...settings, clinicalNotesFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+          </div>
+          <div>
+            <Label className="text-[11px] text-muted-foreground mb-1 block">Prescription (℞) Font Size</Label>
+            <Input value={settings.prescriptionFontSize || ""} onChange={(e) => onChange({ ...settings, prescriptionFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
           </div>
         </div>
       </div>

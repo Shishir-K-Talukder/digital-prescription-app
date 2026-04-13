@@ -300,7 +300,12 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
           className="pt-4 border-t border-gray-300 mt-auto"
           style={settings.footerHeight ? { minHeight: `${settings.footerHeight}mm` } : {}}
         >
-          <div className="text-center text-xs font-bold whitespace-pre-wrap">{settings.footerText}</div>
+          <div
+            className="text-center font-bold whitespace-pre-wrap"
+            style={{ fontSize: settings.footerFontSize ? `${settings.footerFontSize}px` : '12px' }}
+          >
+            {settings.footerText}
+          </div>
         </div>
       )}
     </div>
