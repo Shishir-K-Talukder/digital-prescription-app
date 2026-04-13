@@ -264,16 +264,16 @@ const MedicineSection = ({ medicines, onChange, options, onOptionsChange }: Prop
                   <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
                 </div>
                 <div className="flex-1 grid grid-cols-2 md:grid-cols-6 gap-2">
-                  <div className="col-span-2">
-                    <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
-                    <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(fullName, detectedType) => handleMedicineSelect(med.id, fullName, detectedType)} />
-                  </div>
                   <div>
                     <Label className="text-[11px] text-muted-foreground">Formulation</Label>
                     <Select value={med.formulation || med.type} onValueChange={(v) => updateMedicineMulti(med.id, { formulation: v, type: v })}>
                       <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>{options.types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                     </Select>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-[11px] text-muted-foreground">Medicine Name</Label>
+                    <MedicineNameInput value={med.name} onChange={(v) => updateMedicine(med.id, "name", v)} onSelect={(fullName, detectedType) => handleMedicineSelect(med.id, fullName, detectedType)} />
                   </div>
                   <div>
                     <Label className="text-[11px] text-muted-foreground">Dose</Label>
