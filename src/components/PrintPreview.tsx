@@ -27,6 +27,10 @@ export interface PrintSettings {
   showFooter: boolean;
   footerHeight?: string;
   footerText?: string;
+  footerFontSize?: string;
+  patientInfoFontSize?: string;
+  clinicalNotesFontSize?: string;
+  prescriptionFontSize?: string;
 }
 
 export const defaultPrintSettings: PrintSettings = {
@@ -45,6 +49,10 @@ export const defaultPrintSettings: PrintSettings = {
   showFooter: true,
   footerHeight: "",
   footerText: "",
+  footerFontSize: "12",
+  patientInfoFontSize: "12",
+  clinicalNotesFontSize: "12",
+  prescriptionFontSize: "12",
 };
 
 interface Props {
