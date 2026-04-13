@@ -284,23 +284,12 @@ const PrintPreview = ({ doctor, patient, clinical, medicines, advice, printSetti
       </div>
 
       {/* Footer pinned to bottom */}
-      {settings.showFooter && (
+      {settings.showFooter && settings.footerText && (
         <div
-          className="pt-4 border-t border-gray-300 flex justify-end mt-auto"
+          className="pt-4 border-t border-gray-300 mt-auto"
           style={settings.footerHeight ? { minHeight: `${settings.footerHeight}mm` } : {}}
         >
-          <div className="text-center text-xs">
-            <div className="w-40 border-b border-black mb-1" />
-            {settings.footerText ? (
-              <div className="whitespace-pre-wrap">{settings.footerText}</div>
-            ) : doctorHasInfo ? (
-              <>
-                <p className="font-bold">{doctor.name}</p>
-                {doctor.degrees && <p className="text-gray-500">{doctor.degrees}</p>}
-                {doctor.bmdcNo && <p className="text-gray-500">BMDC: {doctor.bmdcNo}</p>}
-              </>
-            ) : null}
-          </div>
+          <div className="text-center text-xs whitespace-pre-wrap">{settings.footerText}</div>
         </div>
       )}
     </div>
