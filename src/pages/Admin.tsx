@@ -72,6 +72,10 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Expiry management
+  const [expiryDoctor, setExpiryDoctor] = useState<DoctorProfile | null>(null);
+  const [expiryDate, setExpiryDate] = useState("");
+
   // New medicine form
   const [newMedName, setNewMedName] = useState("");
   const [newMedGeneric, setNewMedGeneric] = useState("");
