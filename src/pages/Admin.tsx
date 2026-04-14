@@ -13,9 +13,10 @@ import { toast } from "sonner";
 import {
   Users, Stethoscope, FileText, Shield, Search, Trash2, Eye, UserCheck, UserX,
   ArrowLeft, Pill, CalendarDays, Database, RefreshCw, Settings, Plus, Download,
-  BarChart3, Activity,
+  BarChart3, Activity, Clock, Timer,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Navigate, useNavigate } from "react-router-dom";
 import FloatingNav from "@/components/FloatingNav";
 import { ScrollArea } from "@/components/ui/scroll-area";
