@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Stethoscope, LayoutDashboard, User, LogOut, Shield } from "lucide-react";
-import { useAdmin } from "@/hooks/useAdmin";
+
 
 interface NavAction {
   icon: React.ReactNode;
@@ -17,13 +17,10 @@ const FloatingNav = ({ actions }: { actions?: NavAction[] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
-  const { isAdmin } = useAdmin();
-
   const navItems = [
     { icon: <Stethoscope className="w-5 h-5" />, label: "Write Rx", path: "/" },
     { icon: <LayoutDashboard className="w-5 h-5" />, label: "Dashboard", path: "/dashboard" },
     { icon: <User className="w-5 h-5" />, label: "Profile", path: "/profile" },
-    ...(isAdmin ? [{ icon: <Shield className="w-5 h-5" />, label: "Admin", path: "/admin" }] : []),
   ];
 
   return (
