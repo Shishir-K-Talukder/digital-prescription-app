@@ -56,7 +56,7 @@ const App = () => {
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/dpadmin-secret-panel" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+              <Route path="/admin/login" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="/print" element={<PrintPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
