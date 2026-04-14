@@ -207,6 +207,16 @@ const Admin = () => {
     toast.success("Role removed");
   };
 
+  const setPanelExpiry = async () => {
+    if (!expiryDoctor) return;
+    const val = expiryDate ? new Date(expiryDate).toISOString() : null;
+    const { error } = await supabase.from("profiles").update({ panel_expires_at: val } as any).eq("user_id", expiryDoctor.user_id);
+    if (error) { toast.error("Failed to set expiry"); return; }
+    setDoctors((prev) => prev.map((d) => d.user_id === expiryDoctor.user_id ? { ...d, panel_expires_at: val } : d));
+    toast.success(val ? `Expiry set to ${expiryDate}` : "Expiry removed (lifetime)");
+    setExpiryDoctor(null); setExpiryDate("");
+  };
+
   const exportData = () => {
     const data = { doctors, patients, prescriptions, appointments, templates, roles, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
