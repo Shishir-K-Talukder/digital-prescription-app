@@ -96,7 +96,7 @@ const NotFound = () => {
           <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
             <span className="text-xs font-serif italic text-primary">℞</span>
           </div>
-          <span className="font-medium">RxBengal — Digital Prescription Platform</span>
+          <span className="font-medium">Digital Prescription App</span>
         </div>
       </div>
     </div>
