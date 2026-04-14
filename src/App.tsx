@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +17,14 @@ const Admin = lazy(() => import("./pages/Admin.tsx"));
 
 const queryClient = new QueryClient();
 
+type RedirectState = {
+  from?: {
+    pathname: string;
+    search?: string;
+    hash?: string;
+  };
+};
+
 const getRouterBasename = () => {
   if (typeof window === "undefined") return undefined;
 
@@ -28,23 +36,52 @@ const getRouterBasename = () => {
   return undefined;
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }): React.ReactElement | null => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
-  if (!user) return <Navigate to="/login" replace />;
-  return children as React.ReactElement;
-};
+const getRedirectPath = (location: { search: string; state: unknown }) => {
+  const redirectParam = new URLSearchParams(location.search).get("redirect");
 
-const PublicRoute = ({ children }: { children: React.ReactNode }): React.ReactElement | null => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>;
-  if (user) return <Navigate to="/dashboard" replace />;
-  return children as React.ReactElement;
+  if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+    return redirectParam;
+  }
+
+  const from = (location.state as RedirectState | null)?.from;
+  if (!from?.pathname) return null;
+
+  return `${from.pathname}${from.search ?? ""}${from.hash ?? ""}`;
 };
 
 const Loading = () => (
   <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>
 );
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <Loading />;
+
+  if (!user) {
+    const redirectPath = `${location.pathname}${location.search}${location.hash}`;
+    return (
+      <Navigate
+        to={`/login?redirect=${encodeURIComponent(redirectPath)}`}
+        replace
+        state={{ from: location }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+};
+
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <Loading />;
+  if (user) return <Navigate to={getRedirectPath(location) ?? "/dashboard"} replace />;
+
+  return <>{children}</>;
+};
 
 const App = () => {
   const routerBasename = getRouterBasename();

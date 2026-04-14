@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,28 @@ const getGreeting = () => {
   return { text: "Good Evening, Doctor!", emoji: "🌙" };
 };
 
+const getRedirectPath = (location: { search: string; state: unknown }) => {
+  const redirectParam = new URLSearchParams(location.search).get("redirect");
+
+  if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+    return redirectParam;
+  }
+
+  const from = (location.state as { from?: { pathname: string; search?: string; hash?: string } } | null)?.from;
+  if (!from?.pathname) return "/";
+
+  const path = `${from.pathname}${from.search ?? ""}${from.hash ?? ""}`;
+  return path === "/login" || path === "/signup" ? "/" : path;
+};
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const greeting = useMemo(getGreeting, []);
+  const redirectPath = getRedirectPath(location);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +45,7 @@ const Login = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate("/");
+      navigate(redirectPath, { replace: true });
     }
   };
 
