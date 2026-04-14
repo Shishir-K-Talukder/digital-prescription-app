@@ -14,6 +14,8 @@ const Signup = lazy(() => import("./pages/Signup.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
 const Profile = lazy(() => import("./pages/Profile.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.tsx"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -97,6 +99,8 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                 <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+                <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
