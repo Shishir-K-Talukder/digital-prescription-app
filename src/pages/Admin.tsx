@@ -372,13 +372,31 @@ const Admin = () => {
                               {doc.is_active !== false ? "Active" : "Inactive"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-[10px] text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
+                            {(() => {
+                              if (!doc.panel_expires_at) return <Badge variant="secondary" className="text-[10px]">Lifetime</Badge>;
+                              const exp = new Date(doc.panel_expires_at);
+                              const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+                              const expired = days < 0;
+                              return (
+                                <button onClick={() => { setExpiryDoctor(doc); setExpiryDate(doc.panel_expires_at ? doc.panel_expires_at.split("T")[0] : ""); }}>
+                                  <Badge variant={expired ? "destructive" : days <= 7 ? "destructive" : "secondary"} className="text-[10px] cursor-pointer">
+                                    {expired ? "Expired" : `${days}d left`}
+                                  </Badge>
+                                </button>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="text-[10px] text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
                             <Switch checked={doc.is_active !== false} onCheckedChange={() => toggleUserActive(doc.user_id, doc.is_active !== false)} />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setExpiryDoctor(doc); setExpiryDate(doc.panel_expires_at ? doc.panel_expires_at.split("T")[0] : ""); }}>
+                              <Timer className="w-3.5 h-3.5" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
-                      {filteredDoctors.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No doctors found</TableCell></TableRow>}
+                      {filteredDoctors.length === 0 && <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">No doctors found</TableCell></TableRow>}
                     </TableBody>
                   </Table>
                 </ScrollArea>
