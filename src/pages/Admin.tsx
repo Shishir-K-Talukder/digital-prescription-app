@@ -237,7 +237,7 @@ const Admin = () => {
         <div className="grid grid-cols-3 md:grid-cols-7 gap-3 mb-6">
           {[
             { icon: <Stethoscope className="w-5 h-5 text-primary" />, label: "Doctors", value: doctors.length },
-            { icon: <UserCheck className="w-5 h-5 text-green-500" />, label: "Active", value: activeDoctors },
+            { icon: <UserCheck className="w-5 h-5 text-primary" />, label: "Active", value: activeDoctors },
             { icon: <UserX className="w-5 h-5 text-destructive" />, label: "Inactive", value: inactiveDoctors },
             { icon: <Users className="w-5 h-5 text-primary" />, label: "Patients", value: patients.length },
             { icon: <FileText className="w-5 h-5 text-primary" />, label: "Prescriptions", value: prescriptions.length },
