@@ -675,6 +675,30 @@ const Admin = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* ═══ EXPIRY DIALOG ═══ */}
+        <Dialog open={!!expiryDoctor} onOpenChange={() => setExpiryDoctor(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader><DialogTitle className="flex items-center gap-2"><Timer className="w-4 h-4" /> Set Panel Expiry</DialogTitle></DialogHeader>
+            {expiryDoctor && (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">Doctor: <strong>{expiryDoctor.name || expiryDoctor.user_id.slice(0, 8)}</strong></p>
+                <div>
+                  <Label className="text-xs">Expiry Date</Label>
+                  <Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="mt-1 h-9 text-sm" />
+                </div>
+                <div className="flex gap-2">
+                  <Button className="flex-1 gap-1.5 text-sm" onClick={setPanelExpiry}>
+                    <Clock className="w-3.5 h-3.5" /> {expiryDate ? "Set Expiry" : "Set Lifetime"}
+                  </Button>
+                  <Button variant="outline" className="text-sm" onClick={() => { setExpiryDate(""); }}>
+                    Clear (Lifetime)
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
