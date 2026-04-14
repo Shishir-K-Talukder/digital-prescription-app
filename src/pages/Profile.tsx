@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { DoctorInfo } from "@/components/DoctorHeader";
 import FloatingNav from "@/components/FloatingNav";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
+import PanelExpiryCountdown from "@/components/PanelExpiryCountdown";
 import { Save, User } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +79,7 @@ const Profile = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
+            <PanelExpiryCountdown />
             <ProfilePhotoUpload
               photoUrl={photoUrl}
               doctorName={doctor.name}

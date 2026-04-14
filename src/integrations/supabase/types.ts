@@ -213,6 +213,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          panel_expires_at: string | null
           phone: string
           profile_photo_url: string
           specialization: string
@@ -227,6 +228,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          panel_expires_at?: string | null
           phone?: string
           profile_photo_url?: string
           specialization?: string
@@ -241,6 +243,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          panel_expires_at?: string | null
           phone?: string
           profile_photo_url?: string
           specialization?: string

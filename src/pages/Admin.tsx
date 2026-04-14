@@ -13,9 +13,10 @@ import { toast } from "sonner";
 import {
   Users, Stethoscope, FileText, Shield, Search, Trash2, Eye, UserCheck, UserX,
   ArrowLeft, Pill, CalendarDays, Database, RefreshCw, Settings, Plus, Download,
-  BarChart3, Activity,
+  BarChart3, Activity, Clock, Timer,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Navigate, useNavigate } from "react-router-dom";
 import FloatingNav from "@/components/FloatingNav";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -26,6 +27,7 @@ interface DoctorProfile {
   id: string; user_id: string; name: string; degrees: string; specialization: string;
   bmdc_no: string; phone: string; chamber_address: string; is_active: boolean;
   profile_photo_url: string; created_at: string; updated_at: string;
+  panel_expires_at: string | null;
 }
 interface Patient {
   id: string; user_id: string; name: string; age: string; sex: string;
@@ -69,6 +71,10 @@ const Admin = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Expiry management
+  const [expiryDoctor, setExpiryDoctor] = useState<DoctorProfile | null>(null);
+  const [expiryDate, setExpiryDate] = useState("");
 
   // New medicine form
   const [newMedName, setNewMedName] = useState("");
@@ -199,6 +205,16 @@ const Admin = () => {
     await supabase.from("user_roles").delete().eq("id", id);
     setRoles((r) => r.filter((x) => x.id !== id));
     toast.success("Role removed");
+  };
+
+  const setPanelExpiry = async () => {
+    if (!expiryDoctor) return;
+    const val = expiryDate ? new Date(expiryDate).toISOString() : null;
+    const { error } = await supabase.from("profiles").update({ panel_expires_at: val } as any).eq("user_id", expiryDoctor.user_id);
+    if (error) { toast.error("Failed to set expiry"); return; }
+    setDoctors((prev) => prev.map((d) => d.user_id === expiryDoctor.user_id ? { ...d, panel_expires_at: val } : d));
+    toast.success(val ? `Expiry set to ${expiryDate}` : "Expiry removed (lifetime)");
+    setExpiryDoctor(null); setExpiryDate("");
   };
 
   const exportData = () => {
@@ -333,8 +349,9 @@ const Admin = () => {
                         <TableHead>BMDC</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead className="text-center">Rx</TableHead>
-                        <TableHead className="text-center">Patients</TableHead>
+                         <TableHead className="text-center">Patients</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Expiry</TableHead>
                         <TableHead>Joined</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -355,13 +372,31 @@ const Admin = () => {
                               {doc.is_active !== false ? "Active" : "Inactive"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-[10px] text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>
+                            {(() => {
+                              if (!doc.panel_expires_at) return <Badge variant="secondary" className="text-[10px]">Lifetime</Badge>;
+                              const exp = new Date(doc.panel_expires_at);
+                              const days = Math.ceil((exp.getTime() - Date.now()) / 86400000);
+                              const expired = days < 0;
+                              return (
+                                <button onClick={() => { setExpiryDoctor(doc); setExpiryDate(doc.panel_expires_at ? doc.panel_expires_at.split("T")[0] : ""); }}>
+                                  <Badge variant={expired ? "destructive" : days <= 7 ? "destructive" : "secondary"} className="text-[10px] cursor-pointer">
+                                    {expired ? "Expired" : `${days}d left`}
+                                  </Badge>
+                                </button>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="text-[10px] text-muted-foreground">{new Date(doc.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="flex gap-1">
                             <Switch checked={doc.is_active !== false} onCheckedChange={() => toggleUserActive(doc.user_id, doc.is_active !== false)} />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setExpiryDoctor(doc); setExpiryDate(doc.panel_expires_at ? doc.panel_expires_at.split("T")[0] : ""); }}>
+                              <Timer className="w-3.5 h-3.5" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
-                      {filteredDoctors.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No doctors found</TableCell></TableRow>}
+                      {filteredDoctors.length === 0 && <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground">No doctors found</TableCell></TableRow>}
                     </TableBody>
                   </Table>
                 </ScrollArea>
@@ -636,6 +671,30 @@ const Admin = () => {
                 <div><h4 className="font-semibold mb-1">Clinical Data</h4><pre className="bg-muted p-2 rounded text-xs overflow-auto">{JSON.stringify(selectedPrescription.clinical_data, null, 2)}</pre></div>
                 <div><h4 className="font-semibold mb-1">Medicines</h4><pre className="bg-muted p-2 rounded text-xs overflow-auto">{JSON.stringify(selectedPrescription.medicines, null, 2)}</pre></div>
                 <div><h4 className="font-semibold mb-1">Advice</h4><pre className="bg-muted p-2 rounded text-xs overflow-auto">{JSON.stringify(selectedPrescription.advice, null, 2)}</pre></div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* ═══ EXPIRY DIALOG ═══ */}
+        <Dialog open={!!expiryDoctor} onOpenChange={() => setExpiryDoctor(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader><DialogTitle className="flex items-center gap-2"><Timer className="w-4 h-4" /> Set Panel Expiry</DialogTitle></DialogHeader>
+            {expiryDoctor && (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">Doctor: <strong>{expiryDoctor.name || expiryDoctor.user_id.slice(0, 8)}</strong></p>
+                <div>
+                  <Label className="text-xs">Expiry Date</Label>
+                  <Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} className="mt-1 h-9 text-sm" />
+                </div>
+                <div className="flex gap-2">
+                  <Button className="flex-1 gap-1.5 text-sm" onClick={setPanelExpiry}>
+                    <Clock className="w-3.5 h-3.5" /> {expiryDate ? "Set Expiry" : "Set Lifetime"}
+                  </Button>
+                  <Button variant="outline" className="text-sm" onClick={() => { setExpiryDate(""); }}>
+                    Clear (Lifetime)
+                  </Button>
+                </div>
               </div>
             )}
           </DialogContent>
