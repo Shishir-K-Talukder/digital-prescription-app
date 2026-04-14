@@ -211,6 +211,7 @@ export type Database = {
           created_at: string
           degrees: string
           id: string
+          is_active: boolean
           name: string
           phone: string
           profile_photo_url: string
@@ -224,6 +225,7 @@ export type Database = {
           created_at?: string
           degrees?: string
           id?: string
+          is_active?: boolean
           name?: string
           phone?: string
           profile_photo_url?: string
@@ -237,6 +239,7 @@ export type Database = {
           created_at?: string
           degrees?: string
           id?: string
+          is_active?: boolean
           name?: string
           phone?: string
           profile_photo_url?: string
