@@ -23,7 +23,7 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (!loading && profile.name) {
+    if (!loading) {
       setDoctor(profile);
     }
   }, [loading, profile]);
@@ -34,23 +34,44 @@ const Profile = () => {
 
   const loadPhotoUrl = async () => {
     if (!user) return;
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("profiles")
       .select("profile_photo_url")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to load profile photo:", error);
+      return;
+    }
+
     if (data?.profile_photo_url) setPhotoUrl(data.profile_photo_url);
   };
 
   const handlePhotoChange = async (url: string) => {
     setPhotoUrl(url);
+
     if (user) {
-      await supabase.from("profiles").update({ profile_photo_url: url }).eq("user_id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({ user_id: user.id, profile_photo_url: url }, { onConflict: "user_id" });
+
+      if (error) {
+        console.error("Failed to save profile photo:", error);
+        toast.error("Profile photo could not be saved.");
+      }
     }
   };
 
-  const handleSave = () => {
-    saveProfile(doctor);
+  const handleSave = async () => {
+    const didSave = await saveProfile(doctor);
+
+    if (!didSave) {
+      toast.error("Profile could not be saved.");
+      return;
+    }
+
     toast.success("Profile saved!");
   };
 

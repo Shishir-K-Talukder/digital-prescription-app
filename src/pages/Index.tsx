@@ -47,7 +47,7 @@ const Index = () => {
   });
 
   useEffect(() => {
-    if (!profileLoading && profile.name) {
+    if (!profileLoading) {
       setDoctor(profile);
     }
   }, [profileLoading, profile]);
