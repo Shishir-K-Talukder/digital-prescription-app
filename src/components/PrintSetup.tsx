@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { PrintSettings } from "./PrintPreview";
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, Save, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   settings: PrintSettings;
@@ -11,6 +14,15 @@ interface Props {
 }
 
 const PrintSetup = ({ settings, onChange }: Props) => {
+  const { toast } = useToast();
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    onChange(settings);
+    setSaved(true);
+    toast({ title: "Saved", description: "Print settings saved successfully." });
+    setTimeout(() => setSaved(false), 2000);
+  };
   return (
     <div className="section-card p-5">
       <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
