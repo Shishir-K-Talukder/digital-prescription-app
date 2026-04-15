@@ -18,21 +18,25 @@ export const useDoctorSettings = () => {
 
   const loadSettings = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("doctor_settings")
       .select("*")
       .eq("user_id", user.id)
       .single();
 
+    if (error) {
+      console.error("Failed to load doctor settings:", error);
+    }
+
     if (data) {
       if (data.print_settings && typeof data.print_settings === "object") {
-        setPrintSettings({ ...defaultPrintSettings, ...(data.print_settings as Record<string, unknown>) } as PrintSettings);
+        const merged = { ...defaultPrintSettings, ...(data.print_settings as Record<string, unknown>) } as PrintSettings;
+        console.log("Loaded print settings from DB:", data.print_settings);
+        setPrintSettings(merged);
       }
       if (data.medicine_options && typeof data.medicine_options === "object") {
         const stored = data.medicine_options as Record<string, unknown>;
-        // Only keep user customizations like types and followUpOptions; use fresh defaults for doses/durations/meals/adviceList
         const defaults = loadMedicineOptions();
-        // Migrate old {label, days} follow-up format to string[]
         const rawFollowUp = Array.isArray(stored.followUpOptions) ? stored.followUpOptions : defaults.followUpOptions;
         const migratedFollowUp = rawFollowUp.map((o: any) => typeof o === "string" ? o : o.label ?? String(o));
 
@@ -56,12 +60,17 @@ export const useDoctorSettings = () => {
   const savePrintSettings = async (settings: PrintSettings) => {
     if (!user) return;
     setPrintSettings(settings);
-    await supabase
+    const { error } = await supabase
       .from("doctor_settings")
       .upsert({
         user_id: user.id,
         print_settings: settings as unknown as Json,
       }, { onConflict: "user_id" });
+    if (error) {
+      console.error("Failed to save print settings:", error);
+    } else {
+      console.log("Print settings saved successfully");
+    }
   };
 
   const saveMedicineOptions = async (options: MedicineOptions) => {
