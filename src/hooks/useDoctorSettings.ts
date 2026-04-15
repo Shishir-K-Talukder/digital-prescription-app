@@ -62,31 +62,16 @@ export const useDoctorSettings = () => {
 
     const mergedSettings = { ...defaultPrintSettings, ...settings } as PrintSettings;
 
-    const { data: updatedRows, error: updateError } = await supabase
+    const { error } = await supabase
       .from("doctor_settings")
-      .update({
+      .upsert({
+        user_id: user.id,
         print_settings: mergedSettings as unknown as Json,
-      })
-      .eq("user_id", user.id)
-      .select("id");
+      }, { onConflict: "user_id" });
 
-    if (updateError) {
-      console.error("Failed to update print settings:", updateError);
+    if (error) {
+      console.error("Failed to save print settings:", error);
       return false;
-    }
-
-    if (!updatedRows || updatedRows.length === 0) {
-      const { error: insertError } = await supabase
-        .from("doctor_settings")
-        .insert({
-          user_id: user.id,
-          print_settings: mergedSettings as unknown as Json,
-        });
-
-      if (insertError) {
-        console.error("Failed to insert print settings:", insertError);
-        return false;
-      }
     }
 
     setPrintSettings(mergedSettings);
