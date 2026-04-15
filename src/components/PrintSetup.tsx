@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,14 +15,21 @@ interface Props {
 
 const PrintSetup = ({ settings, onChange }: Props) => {
   const { toast } = useToast();
+  const [local, setLocal] = useState<PrintSettings>(settings);
   const [saved, setSaved] = useState(false);
 
+  // Sync from parent when settings load from DB
+  useEffect(() => {
+    setLocal(settings);
+  }, [settings]);
+
   const handleSave = () => {
-    onChange(settings);
+    onChange(local);
     setSaved(true);
-    toast({ title: "Saved", description: "Print settings saved successfully." });
+    toast({ title: "Saved", description: "Print settings saved to database successfully." });
     setTimeout(() => setSaved(false), 2000);
   };
+
   return (
     <div className="section-card p-5">
       <div className="flex items-center justify-between mb-4">
@@ -39,7 +46,7 @@ const PrintSetup = ({ settings, onChange }: Props) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <Label className="text-[11px] text-muted-foreground mb-1 block">Page Size</Label>
-          <Select value={settings.pageSize} onValueChange={(v) => onChange({ ...settings, pageSize: v as PrintSettings["pageSize"] })}>
+          <Select value={local.pageSize} onValueChange={(v) => setLocal({ ...local, pageSize: v as PrintSettings["pageSize"] })}>
             <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="A4">A4 (210×297mm)</SelectItem>
@@ -50,26 +57,26 @@ const PrintSetup = ({ settings, onChange }: Props) => {
           </Select>
         </div>
 
-        {settings.pageSize === "Custom" && (
+        {local.pageSize === "Custom" && (
           <>
             <div>
               <Label className="text-[11px] text-muted-foreground mb-1 block">Width (mm)</Label>
-              <Input value={settings.customWidth} onChange={(e) => onChange({ ...settings, customWidth: e.target.value })} placeholder="210" className="h-9 text-xs" type="number" />
+              <Input value={local.customWidth} onChange={(e) => setLocal({ ...local, customWidth: e.target.value })} placeholder="210" className="h-9 text-xs" type="number" />
             </div>
             <div>
               <Label className="text-[11px] text-muted-foreground mb-1 block">Height (mm)</Label>
-              <Input value={settings.customHeight} onChange={(e) => onChange({ ...settings, customHeight: e.target.value })} placeholder="297" className="h-9 text-xs" type="number" />
+              <Input value={local.customHeight} onChange={(e) => setLocal({ ...local, customHeight: e.target.value })} placeholder="297" className="h-9 text-xs" type="number" />
             </div>
           </>
         )}
 
         <div>
           <Label className="text-[11px] text-muted-foreground mb-1 block">Header Size</Label>
-          <Select value={settings.headerSize} onValueChange={(v) => {
+          <Select value={local.headerSize} onValueChange={(v) => {
             if (v === "custom") {
-              onChange({ ...settings, headerSize: "custom" as any, customHeaderHeight: settings.customHeaderHeight || "80" });
+              setLocal({ ...local, headerSize: "custom" as any, customHeaderHeight: local.customHeaderHeight || "80" });
             } else {
-              onChange({ ...settings, headerSize: v as PrintSettings["headerSize"] });
+              setLocal({ ...local, headerSize: v as PrintSettings["headerSize"] });
             }
           }}>
             <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
@@ -82,15 +89,15 @@ const PrintSetup = ({ settings, onChange }: Props) => {
           </Select>
         </div>
 
-        {settings.headerSize === "custom" && (
+        {local.headerSize === "custom" && (
           <>
             <div>
               <Label className="text-[11px] text-muted-foreground mb-1 block">Header Height (mm)</Label>
-              <Input value={settings.customHeaderHeight || "25"} onChange={(e) => onChange({ ...settings, customHeaderHeight: e.target.value })} placeholder="25" className="h-9 text-xs" type="number" />
+              <Input value={local.customHeaderHeight || "25"} onChange={(e) => setLocal({ ...local, customHeaderHeight: e.target.value })} placeholder="25" className="h-9 text-xs" type="number" />
             </div>
             <div>
               <Label className="text-[11px] text-muted-foreground mb-1 block">Header Width (mm)</Label>
-              <Input value={settings.customHeaderWidth || "210"} onChange={(e) => onChange({ ...settings, customHeaderWidth: e.target.value })} placeholder="210" className="h-9 text-xs" type="number" />
+              <Input value={local.customHeaderWidth || "210"} onChange={(e) => setLocal({ ...local, customHeaderWidth: e.target.value })} placeholder="210" className="h-9 text-xs" type="number" />
             </div>
           </>
         )}
@@ -101,11 +108,11 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Width (mm)</Label>
-            <Input value={settings.patientInfoWidth || ""} onChange={(e) => onChange({ ...settings, patientInfoWidth: e.target.value })} placeholder="Full width (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.patientInfoWidth || ""} onChange={(e) => setLocal({ ...local, patientInfoWidth: e.target.value })} placeholder="Full width (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Height (mm)</Label>
-            <Input value={settings.patientInfoHeight || ""} onChange={(e) => onChange({ ...settings, patientInfoHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.patientInfoHeight || ""} onChange={(e) => setLocal({ ...local, patientInfoHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
         </div>
       </div>
@@ -115,11 +122,11 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Width (mm)</Label>
-            <Input value={settings.clinicalNotesWidth || ""} onChange={(e) => onChange({ ...settings, clinicalNotesWidth: e.target.value })} placeholder="35% (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.clinicalNotesWidth || ""} onChange={(e) => setLocal({ ...local, clinicalNotesWidth: e.target.value })} placeholder="35% (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Height (mm)</Label>
-            <Input value={settings.clinicalNotesHeight || ""} onChange={(e) => onChange({ ...settings, clinicalNotesHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.clinicalNotesHeight || ""} onChange={(e) => setLocal({ ...local, clinicalNotesHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
         </div>
       </div>
@@ -129,11 +136,11 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Width (mm)</Label>
-            <Input value={settings.rxSectionWidth || ""} onChange={(e) => onChange({ ...settings, rxSectionWidth: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.rxSectionWidth || ""} onChange={(e) => setLocal({ ...local, rxSectionWidth: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Height (mm)</Label>
-            <Input value={settings.rxSectionHeight || ""} onChange={(e) => onChange({ ...settings, rxSectionHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.rxSectionHeight || ""} onChange={(e) => setLocal({ ...local, rxSectionHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
         </div>
       </div>
@@ -152,7 +159,7 @@ const PrintSetup = ({ settings, onChange }: Props) => {
             { key: "showFooter", label: "Footer", id: "show-footer" },
           ].map(({ key, label, id }) => (
             <div key={key} className="flex items-center gap-2.5 bg-muted/30 rounded-lg px-3 py-2">
-              <Switch checked={(settings as any)[key]} onCheckedChange={(v) => onChange({ ...settings, [key]: v })} id={id} />
+              <Switch checked={(local as any)[key]} onCheckedChange={(v) => setLocal({ ...local, [key]: v })} id={id} />
               <Label htmlFor={id} className="text-xs text-foreground cursor-pointer">{label}</Label>
             </div>
           ))}
@@ -164,17 +171,17 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Footer Height (mm)</Label>
-            <Input value={settings.footerHeight || ""} onChange={(e) => onChange({ ...settings, footerHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.footerHeight || ""} onChange={(e) => setLocal({ ...local, footerHeight: e.target.value })} placeholder="Auto (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Footer Font Size (px)</Label>
-            <Input value={settings.footerFontSize || ""} onChange={(e) => onChange({ ...settings, footerFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.footerFontSize || ""} onChange={(e) => setLocal({ ...local, footerFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
           </div>
           <div className="sm:col-span-2 lg:col-span-3">
             <Label className="text-[11px] text-muted-foreground mb-1 block">Custom Footer Text</Label>
             <textarea
-              value={settings.footerText || ""}
-              onChange={(e) => onChange({ ...settings, footerText: e.target.value })}
+              value={local.footerText || ""}
+              onChange={(e) => setLocal({ ...local, footerText: e.target.value })}
               placeholder="Leave empty to hide footer content"
               className="w-full h-20 rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
             />
@@ -187,15 +194,15 @@ const PrintSetup = ({ settings, onChange }: Props) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Patient Info Font Size</Label>
-            <Input value={settings.patientInfoFontSize || ""} onChange={(e) => onChange({ ...settings, patientInfoFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.patientInfoFontSize || ""} onChange={(e) => setLocal({ ...local, patientInfoFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Clinical Notes Font Size</Label>
-            <Input value={settings.clinicalNotesFontSize || ""} onChange={(e) => onChange({ ...settings, clinicalNotesFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.clinicalNotesFontSize || ""} onChange={(e) => setLocal({ ...local, clinicalNotesFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
           </div>
           <div>
             <Label className="text-[11px] text-muted-foreground mb-1 block">Prescription (℞) Font Size</Label>
-            <Input value={settings.prescriptionFontSize || ""} onChange={(e) => onChange({ ...settings, prescriptionFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
+            <Input value={local.prescriptionFontSize || ""} onChange={(e) => setLocal({ ...local, prescriptionFontSize: e.target.value })} placeholder="12 (default)" className="h-9 text-xs" type="number" />
           </div>
         </div>
       </div>
