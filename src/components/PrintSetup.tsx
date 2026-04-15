@@ -10,24 +10,40 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   settings: PrintSettings;
-  onChange: (s: PrintSettings) => void;
+  onChange: (s: PrintSettings) => Promise<boolean> | boolean;
 }
 
 const PrintSetup = ({ settings, onChange }: Props) => {
   const { toast } = useToast();
   const [local, setLocal] = useState<PrintSettings>(settings);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Sync from parent when settings load from DB
   useEffect(() => {
     setLocal(settings);
   }, [settings]);
 
-  const handleSave = () => {
-    onChange(local);
-    setSaved(true);
-    toast({ title: "Saved", description: "Print settings saved to database successfully." });
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    setSaving(true);
+
+    try {
+      const didSave = await Promise.resolve(onChange(local));
+
+      if (didSave === false) {
+        toast({ title: "Save failed", description: "Print settings could not be saved." });
+        return;
+      }
+
+      setSaved(true);
+      toast({ title: "Saved", description: "Print settings saved to database successfully." });
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error("Failed to save print settings:", error);
+      toast({ title: "Save failed", description: "Print settings could not be saved." });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -37,9 +53,9 @@ const PrintSetup = ({ settings, onChange }: Props) => {
           <SlidersHorizontal className="w-4 h-4 text-primary" />
           Print Page Setup
         </h3>
-        <Button size="sm" onClick={handleSave} className="gap-1.5 h-8 text-xs">
+        <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="gap-1.5 h-8 text-xs">
           {saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
-          {saved ? "Saved!" : "Save Settings"}
+          {saving ? "Saving..." : saved ? "Saved!" : "Save Settings"}
         </Button>
       </div>
 

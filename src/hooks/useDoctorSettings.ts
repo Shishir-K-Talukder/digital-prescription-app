@@ -22,17 +22,17 @@ export const useDoctorSettings = () => {
       .from("doctor_settings")
       .select("*")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Failed to load doctor settings:", error);
+      setLoading(false);
+      return;
     }
 
     if (data) {
       if (data.print_settings && typeof data.print_settings === "object") {
-        const merged = { ...defaultPrintSettings, ...(data.print_settings as Record<string, unknown>) } as PrintSettings;
-        console.log("Loaded print settings from DB:", data.print_settings);
-        setPrintSettings(merged);
+        setPrintSettings({ ...defaultPrintSettings, ...(data.print_settings as Record<string, unknown>) } as PrintSettings);
       }
       if (data.medicine_options && typeof data.medicine_options === "object") {
         const stored = data.medicine_options as Record<string, unknown>;
@@ -58,19 +58,39 @@ export const useDoctorSettings = () => {
   };
 
   const savePrintSettings = async (settings: PrintSettings) => {
-    if (!user) return;
-    setPrintSettings(settings);
-    const { error } = await supabase
+    if (!user) return false;
+
+    const mergedSettings = { ...defaultPrintSettings, ...settings } as PrintSettings;
+
+    const { data: updatedRows, error: updateError } = await supabase
       .from("doctor_settings")
-      .upsert({
-        user_id: user.id,
-        print_settings: settings as unknown as Json,
-      }, { onConflict: "user_id" });
-    if (error) {
-      console.error("Failed to save print settings:", error);
-    } else {
-      console.log("Print settings saved successfully");
+      .update({
+        print_settings: mergedSettings as unknown as Json,
+      })
+      .eq("user_id", user.id)
+      .select("id");
+
+    if (updateError) {
+      console.error("Failed to update print settings:", updateError);
+      return false;
     }
+
+    if (!updatedRows || updatedRows.length === 0) {
+      const { error: insertError } = await supabase
+        .from("doctor_settings")
+        .insert({
+          user_id: user.id,
+          print_settings: mergedSettings as unknown as Json,
+        });
+
+      if (insertError) {
+        console.error("Failed to insert print settings:", insertError);
+        return false;
+      }
+    }
+
+    setPrintSettings(mergedSettings);
+    return true;
   };
 
   const saveMedicineOptions = async (options: MedicineOptions) => {
